@@ -621,70 +621,79 @@ flowchart LR
 ```
 ## 12. Acceptance Criteria
 
-### AC01 - Đăng nhập
+### AC01 - Đăng nhập và xác thực người dùng
+**Tương ứng: FR01 - Đăng nhập và xác thực người dùng**
 
 - Người dùng nhập đúng tài khoản và mật khẩu.
-- Hệ thống cho phép người dùng đăng nhập thành công.
+- Hệ thống xác thực thông tin đăng nhập thành công.
+- Người dùng được chuyển vào hệ thống sau khi đăng nhập thành công.
 - Người dùng nhập sai tài khoản hoặc mật khẩu.
-- Hệ thống hiển thị thông báo lỗi.
+- Hệ thống hiển thị thông báo đăng nhập thất bại.
 - Người dùng chưa nhập đầy đủ thông tin.
 - Hệ thống yêu cầu người dùng nhập đầy đủ thông tin.
 
-### AC02 - Đặt chuyến
+### AC02 - Đặt xe
+**Tương ứng: FR02 - Đặt xe**
 
-- Khách hàng chọn loại xe hợp lệ.
+- Khách hàng chọn loại xe hoặc dịch vụ.
 - Khách hàng nhập đầy đủ điểm đón và điểm đến.
 - Khách hàng chọn phương thức thanh toán.
-- Hệ thống kiểm tra thông tin đặt chuyến.
-- Nếu thông tin hợp lệ, hệ thống tạo yêu cầu đặt chuyến thành công.
+- Hệ thống kiểm tra thông tin đặt xe.
+- Nếu thông tin hợp lệ, hệ thống tạo yêu cầu đặt xe thành công.
 - Nếu thông tin không hợp lệ, hệ thống hiển thị thông báo lỗi.
 
-### AC03 - Phân công tài xế
+### AC03 - Tìm và phân công tài xế
+**Tương ứng: FR03 - Tìm và phân công tài xế**
 
-- Hệ thống tìm kiếm các tài xế đang sẵn sàng.
-- Hệ thống gửi yêu cầu chuyến đến tài xế phù hợp.
+- Hệ thống tìm kiếm tài xế đang sẵn sàng.
+- Hệ thống lựa chọn tài xế phù hợp với yêu cầu chuyến đi.
+- Hệ thống gửi yêu cầu chuyến đến tài xế.
 - Tài xế chấp nhận chuyến.
-- Hệ thống cập nhật tài xế cho chuyến đi.
+- Hệ thống xác nhận và phân công tài xế cho chuyến.
 - Tài xế từ chối chuyến.
-- Hệ thống tìm kiếm tài xế khác.
+- Hệ thống tiếp tục tìm tài xế khác.
 
-### AC04 - Theo dõi chuyến
+### AC04 - Theo dõi chuyến đi
+**Tương ứng: FR04 - Theo dõi chuyến đi**
 
 - Khách hàng xem được trạng thái hiện tại của chuyến.
 - Hệ thống cập nhật trạng thái khi tài xế nhận chuyến.
-- Hệ thống cập nhật trạng thái khi tài xế đang di chuyển đến điểm đón.
+- Hệ thống cập nhật trạng thái khi tài xế đang đến điểm đón.
 - Hệ thống cập nhật trạng thái khi tài xế đã đến điểm đón.
 - Hệ thống cập nhật trạng thái khi chuyến bắt đầu.
 - Hệ thống cập nhật trạng thái khi chuyến hoàn thành.
 
-### AC05 - Thanh toán
+### AC05 - Tính cước và thanh toán
+**Tương ứng: FR05 - Tính cước và thanh toán**
 
-- Hệ thống tính cước phí dựa trên thông tin chuyến đi.
+- Hệ thống tính cước dựa trên thông tin chuyến đi.
 - Khách hàng có thể chọn thanh toán bằng tiền mặt.
 - Khách hàng có thể chọn thanh toán điện tử.
-- Thanh toán thành công.
-- Hệ thống ghi nhận thông tin thanh toán.
-- Thanh toán điện tử thất bại.
-- Hệ thống thông báo lỗi và cho phép khách hàng thanh toán lại.
+- Khi thanh toán thành công, hệ thống ghi nhận giao dịch.
+- Khi thanh toán điện tử thất bại, hệ thống thông báo lỗi.
+- Hệ thống cho phép khách hàng thực hiện thanh toán lại.
 
-### AC06 - Thông báo
+### AC06 - Quản lý lịch sử và đánh giá
+**Tương ứng: FR06 - Quản lý lịch sử chuyến đi và đánh giá**
+
+- Khách hàng xem được lịch sử các chuyến đã thực hiện.
+- Thông tin lịch sử chuyến được lưu đầy đủ.
+- Khách hàng chỉ được đánh giá sau khi chuyến hoàn thành.
+- Khách hàng có thể nhập điểm đánh giá.
+- Khách hàng có thể nhập nhận xét.
+- Hệ thống lưu đánh giá thành công.
+
+### AC07 - Thông báo
+**Tương ứng: FR07 - Gửi và nhận thông báo**
 
 - Hệ thống gửi thông báo khi tài xế nhận chuyến.
 - Hệ thống gửi thông báo khi tài xế đến điểm đón.
 - Hệ thống gửi thông báo khi chuyến bắt đầu.
 - Hệ thống gửi thông báo khi chuyến hoàn thành.
-- Hệ thống gửi thông báo kết quả thanh toán.
+- Hệ thống gửi thông báo về kết quả thanh toán.
 
-### AC07 - Đánh giá tài xế
-
-- Khách hàng chỉ được đánh giá sau khi chuyến hoàn thành.
-- Khách hàng nhập điểm đánh giá.
-- Khách hàng có thể nhập nhận xét.
-- Hệ thống kiểm tra thông tin đánh giá.
-- Hệ thống lưu đánh giá thành công.
-- Khách hàng không thể đánh giá chuyến chưa hoàn thành.
-
-### AC08 - Quản lý vận hành
+### AC08 - Quản lý và giám sát vận hành
+**Tương ứng: FR08 - Quản lý và giám sát vận hành**
 
 - Nhân viên vận hành xem được danh sách chuyến.
 - Nhân viên vận hành xem được trạng thái của từng chuyến.
