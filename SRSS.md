@@ -94,3 +94,59 @@ flowchart TB
     style C09 fill:#FFFFFF,stroke:#2563EB
     style C10 fill:#FFFFFF,stroke:#2563EB
 ```
+## 3. Business Requirements
+
+```mermaid
+flowchart TB
+
+    BR01["BR-01<br/>Hệ thống phải cho phép khách hàng lựa chọn loại xe/dịch vụ"]
+
+    BR02["BR-02<br/>Hệ thống phải cho phép khách hàng nhập điểm đón và điểm đến"]
+
+    BR03["BR-03<br/>Hệ thống phải cho phép khách hàng gửi yêu cầu đặt xe"]
+
+    BR04["BR-04<br/>Hệ thống phải cho phép khách hàng theo dõi trạng thái chuyến"]
+
+    BR05["BR-05<br/>Hệ thống phải cho phép khách hàng lựa chọn phương thức thanh toán"]
+
+    BR06["BR-06<br/>Hệ thống phải cho phép khách hàng xem lịch sử chuyến đi"]
+
+    BR07["BR-07<br/>Hệ thống phải cho phép khách hàng đánh giá tài xế"]
+
+    BR08["BR-08<br/>Hệ thống phải tự động tìm và phân công tài xế phù hợp"]
+
+    BR09["BR-09<br/>Hệ thống phải cho phép tài xế chấp nhận hoặc từ chối chuyến"]
+
+    BR10["BR-10<br/>Hệ thống phải cho phép tài xế cập nhật trạng thái chuyến"]
+
+    BR11["BR-11<br/>Hệ thống phải hỗ trợ tính cước chuyến đi"]
+
+    BR12["BR-12<br/>Hệ thống phải hỗ trợ thanh toán tiền mặt và điện tử"]
+
+    BR13["BR-13<br/>Hệ thống phải gửi thông báo cho khách hàng và tài xế"]
+
+    BR14["BR-14<br/>Hệ thống phải cho phép nhân viên vận hành quản lý và giám sát chuyến"]
+
+    BR15["BR-15<br/>Hệ thống phải hỗ trợ báo cáo hoạt động và doanh thu"]
+
+    BR16["BR-16<br/>Hệ thống phải kiểm soát quyền truy cập theo vai trò"]
+
+    BR17["BR-17<br/>Hệ thống phải lưu vết các thao tác quan trọng"]
+
+    style BR01 fill:#FFFFFF,stroke:#2563EB
+    style BR02 fill:#FFFFFF,stroke:#2563EB
+    style BR03 fill:#FFFFFF,stroke:#2563EB
+    style BR04 fill:#FFFFFF,stroke:#2563EB
+    style BR05 fill:#FFFFFF,stroke:#2563EB
+    style BR06 fill:#FFFFFF,stroke:#2563EB
+    style BR07 fill:#FFFFFF,stroke:#2563EB
+    style BR08 fill:#FFFFFF,stroke:#2563EB
+    style BR09 fill:#FFFFFF,stroke:#2563EB
+    style BR10 fill:#FFFFFF,stroke:#2563EB
+    style BR11 fill:#FFFFFF,stroke:#2563EB
+    style BR12 fill:#FFFFFF,stroke:#2563EB
+    style BR13 fill:#FFFFFF,stroke:#2563EB
+    style BR14 fill:#FFFFFF,stroke:#2563EB
+    style BR15 fill:#FFFFFF,stroke:#2563EB
+    style BR16 fill:#FFFFFF,stroke:#2563EB
+    style BR17 fill:#FFFFFF,stroke:#2563EB
