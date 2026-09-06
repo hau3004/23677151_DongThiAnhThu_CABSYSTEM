@@ -701,3 +701,27 @@ flowchart LR
 - Nhân viên vận hành có thể quản lý các chuyến đang hoạt động.
 - Hệ thống cung cấp báo cáo hoạt động.
 - Hệ thống cung cấp báo cáo doanh thu.
+## 13. Requirements Traceability Matrix
+
+| BG ID | Business Goal | BR ID | Business Requirement | FR ID | Functional Requirement | AC ID | Acceptance Criteria |
+|:---:|---|:---:|---|:---:|---|:---:|---|
+| BG-01 | Số hóa quy trình đặt xe | BR-01 | Lựa chọn loại xe/dịch vụ | FR-02 | Đặt xe | AC-02 | Khách hàng chọn xe, nhập điểm đón/đến và tạo yêu cầu đặt xe thành công |
+| BG-01 | Số hóa quy trình đặt xe | BR-02 | Nhập điểm đón và điểm đến | FR-02 | Đặt xe | AC-02 | Hệ thống kiểm tra và tiếp nhận thông tin điểm đón, điểm đến |
+| BG-01 | Số hóa quy trình đặt xe | BR-03 | Tạo yêu cầu đặt xe | FR-02 | Đặt xe | AC-02 | Yêu cầu đặt xe được tạo thành công khi thông tin hợp lệ |
+| BG-02 | Tự động tìm và phân công tài xế | BR-08 | Tự động tìm và phân công tài xế | FR-03 | Tìm và phân công tài xế | AC-03 | Hệ thống tìm tài xế phù hợp và gửi yêu cầu chuyến |
+| BG-02 | Tự động tìm và phân công tài xế | BR-09 | Tài xế chấp nhận hoặc từ chối chuyến | FR-03 | Tìm và phân công tài xế | AC-03 | Tài xế chấp nhận thì được phân công, từ chối thì hệ thống tìm tài xế khác |
+| BG-03 | Nâng cao trải nghiệm khách hàng | BR-04 | Theo dõi trạng thái chuyến | FR-04 | Theo dõi chuyến đi | AC-04 | Khách hàng xem được trạng thái chuyến và các trạng thái được cập nhật |
+| BG-03 | Nâng cao trải nghiệm khách hàng | BR-06 | Xem lịch sử chuyến đi | FR-06 | Quản lý lịch sử chuyến đi và đánh giá | AC-06 | Khách hàng xem được lịch sử các chuyến đã thực hiện |
+| BG-03 | Nâng cao trải nghiệm khách hàng | BR-07 | Đánh giá tài xế | FR-06 | Quản lý lịch sử chuyến đi và đánh giá | AC-06 | Khách hàng chỉ được đánh giá sau khi chuyến hoàn thành |
+| BG-03 | Nâng cao trải nghiệm khách hàng | BR-13 | Gửi thông báo cho khách hàng và tài xế | FR-07 | Gửi và nhận thông báo | AC-07 | Hệ thống gửi thông báo theo các sự kiện của chuyến |
+| BG-04 | Quản lý thanh toán tập trung | BR-05 | Lựa chọn phương thức thanh toán | FR-05 | Tính cước và thanh toán | AC-05 | Khách hàng chọn được tiền mặt hoặc thanh toán điện tử |
+| BG-04 | Quản lý thanh toán tập trung | BR-11 | Tính cước chuyến đi | FR-05 | Tính cước và thanh toán | AC-05 | Hệ thống tính cước dựa trên thông tin chuyến đi |
+| BG-04 | Quản lý thanh toán tập trung | BR-12 | Thanh toán tiền mặt và điện tử | FR-05 | Tính cước và thanh toán | AC-05 | Hệ thống ghi nhận thanh toán thành công và xử lý thanh toán thất bại |
+| BG-05 | Nâng cao hiệu quả vận hành | BR-10 | Cập nhật trạng thái chuyến | FR-04 | Theo dõi chuyến đi | AC-04 | Trạng thái chuyến được cập nhật theo tiến trình thực tế |
+| BG-05 | Nâng cao hiệu quả vận hành | BR-14 | Quản lý và giám sát chuyến | FR-08 | Quản lý và giám sát vận hành | AC-08 | Nhân viên vận hành xem và theo dõi được các chuyến |
+| BG-06 | Quản trị và phân quyền | BR-03 | Phân quyền người dùng | FR-01 | Đăng nhập và xác thực người dùng | AC-01 | Người dùng được truy cập chức năng theo vai trò được cấp |
+| BG-06 | Quản trị và phân quyền | BR-16 | Kiểm soát quyền truy cập theo vai trò | FR-01 | Đăng nhập và xác thực người dùng | AC-01 | Hệ thống kiểm soát quyền truy cập theo vai trò |
+| BG-06 | Quản trị và phân quyền | BR-17 | Lưu vết các thao tác quan trọng | FR-08 | Quản lý và giám sát vận hành | AC-08 | Hệ thống lưu vết các thao tác quan trọng |
+| BG-07 | Báo cáo và phân tích | BR-15 | Báo cáo hoạt động và doanh thu | FR-08 | Quản lý và giám sát vận hành | AC-08 | Hệ thống cung cấp báo cáo hoạt động và doanh thu |
+| BG-09 | Khả năng tích hợp | BR-12 | Thanh toán tiền mặt và điện tử | FR-05 | Tính cước và thanh toán | AC-05 | Thanh toán điện tử được xử lý thông qua hệ thống thanh toán |
+| BG-10 | Bảo mật dữ liệu | BR-01 | Quản lý và xác thực người dùng | FR-01 | Đăng nhập và xác thực người dùng | AC-01 | Hệ thống xác thực người dùng trước khi cho phép truy cập |
