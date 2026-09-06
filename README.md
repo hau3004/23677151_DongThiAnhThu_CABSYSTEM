@@ -1,41 +1,51 @@
 # 23677151_DongThiAnhThu_CABSYSTEM
-flowchart TB
-    %% Business Stakeholders
-    BGĐ["Ban giám đốc"]
-    KH["Khách hàng"]
-    TX["Tài xế"]
-    OPR["Nhân viên vận hành"]
-    ADM["Quản trị viên hệ thống"]
-    KT["Kế toán / Tài chính"]
-    CSKH["Chăm sóc khách hàng"]
-    QL["Quản lý / Điều hành"]
+flowchart LR
+    CAB(("CAB System"))
 
-    %% Technical Stakeholders
-    BA["Business Analyst"]
-    DEV["Development Team"]
-    IT["DevOps / IT"]
+    subgraph INTERNAL["Internal Stakeholders"]
+        BGĐ["Ban giám đốc"]
+        OPR["Nhân viên vận hành"]
+        ADM["Quản trị viên"]
+        KT["Kế toán / Tài chính"]
+        CSKH["CSKH"]
+        QL["Quản lý / Điều hành"]
+        BA["Business Analyst"]
+        DEV["Development Team"]
+        IT["DevOps / IT"]
+    end
 
-    %% External Systems
-    PAY["Payment Provider"]
-    MAP["Map / Location Provider"]
-    NOTI["Notification Provider"]
+    subgraph USERS["End Users"]
+        KH["Khách hàng"]
+        TX["Tài xế"]
+    end
 
-    %% Relationships
-    BGĐ --> QL
-    BGĐ --> BA
+    subgraph EXTERNAL["External Stakeholders"]
+        PAY["Payment Provider"]
+        MAP["Map / Location Provider"]
+        NOTI["Notification Provider"]
+    end
 
-    KH --> CAB["CAB System"]
+    KH --> CAB
     TX --> CAB
     OPR --> CAB
     ADM --> CAB
     KT --> CAB
     CSKH --> CAB
     QL --> CAB
-
     BA --> CAB
     DEV --> CAB
     IT --> CAB
 
     CAB --> PAY
     CAB --> MAP
+    CAB --> NOTI
+
+    BGĐ --> QL
+    BGĐ --> BA
+
+    style CAB fill:#2563eb,color:#fff,stroke:#1e40af,stroke-width:3px
+    style INTERNAL fill:#dcfce7,stroke:#16a34a
+    style USERS fill:#dbeafe,stroke:#2563eb
+    style EXTERNAL fill:#fef3c7,stroke:#d97706
+
     CAB --> NOTI
