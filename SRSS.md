@@ -142,7 +142,7 @@ flowchart TB
 - **BG-09:** Hỗ trợ tích hợp với các dịch vụ bên ngoài.
 - **BG-10:** Bảo vệ dữ liệu người dùng, dữ liệu vị trí và dữ liệu giao dịch.
 
-## 4. System Modules
+## 4. Minimum Viable Product (MVP) Modules
 
 ```mermaid
 flowchart TB
@@ -347,5 +347,6 @@ flowchart TD
     P09 --> O01
 
     R01 --> END
+
 
 ```
