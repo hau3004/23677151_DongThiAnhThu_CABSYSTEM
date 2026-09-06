@@ -266,87 +266,52 @@ flowchart TB
 | **BR-17** | Lưu vết các thao tác quan trọng | Operation & Administration | Should Have |
 ## 6. Xây dựng mô hình quy trình nghiệp vụ
 
+## 6. Xây dựng mô hình quy trình nghiệp vụ
+
 ```mermaid
 flowchart TD
+    A([Start]) --> B[Khách hàng đăng nhập]
+    B --> C[Chọn loại xe / dịch vụ]
+    C --> D[Nhập điểm đón và điểm đến]
+    D --> E[Chọn phương thức thanh toán]
+    E --> F[Gửi yêu cầu đặt chuyến]
 
-    START(["Start"])
+    F --> G{Thông tin hợp lệ?}
+    G -- Không --> D
+    G -- Có --> H[Tìm tài xế phù hợp]
 
-    C01["Khách hàng<br/>Đăng nhập"]
-    C02["Khách hàng<br/>Chọn loại xe"]
-    C03["Khách hàng<br/>Nhập điểm đón & điểm đến"]
-    C04["Khách hàng<br/>Gửi yêu cầu đặt xe"]
+    H --> I{Có tài xế?}
+    I -- Không --> J[Thông báo không có tài xế]
+    J --> D
+    I -- Có --> K[Gửi yêu cầu cho tài xế]
 
-    START --> C01 --> C02 --> C03 --> C04
+    K --> L{Tài xế chấp nhận?}
+    L -- Không --> H
+    L -- Có --> M[Xác nhận tài xế]
 
-    B01["Booking Management<br/>Tạo Booking"]
-    B02{"Thông tin hợp lệ?"}
+    M --> N[Thông báo cho khách hàng]
+    N --> O[Tài xế di chuyển đến điểm đón]
+    O --> P[Tài xế đã đến]
+    P --> Q[Bắt đầu chuyến đi]
+    Q --> R[Chuyến đi đang thực hiện]
+    R --> S[Kết thúc chuyến đi]
 
-    C04 --> B01 --> B02
+    S --> T[Tính cước phí]
+    T --> U{Phương thức thanh toán}
 
-    B02 -- "Không" --> C03
-    B02 -- "Có" --> B03["Booking = REQUESTED"]
+    U -- Tiền mặt --> V[Thanh toán tiền mặt]
+    U -- Điện tử --> W[Thực hiện thanh toán điện tử]
 
-    M01["Driver Matching<br/>Tìm tài xế phù hợp"]
-    M02{"Có tài xế phù hợp?"}
+    V --> X[Ghi nhận thanh toán]
+    W --> Y{Thanh toán thành công?}
 
-    B03 --> M01 --> M02
+    Y -- Không --> Z[Thông báo thanh toán thất bại]
+    Z --> W
+    Y -- Có --> X
 
-    M02 -- "Không" --> M03["Thông báo<br/>Không tìm được tài xế"]
-    M03 --> END(["End"])
-
-    M02 -- "Có" --> M04["Gửi yêu cầu chuyến<br/>cho tài xế"]
-
-    M05{"Tài xế chấp nhận?"}
-
-    M04 --> M05
-
-    M05 -- "Không / Không phản hồi" --> M01
-    M05 -- "Có" --> M06["Driver Assigned"]
-
-    N01["Notification Module<br/>Thông báo tài xế cho khách hàng"]
-
-    M06 --> N01
-
-    T01["Tài xế di chuyển<br/>đến điểm đón"]
-    T02["Tài xế đã đến"]
-    T03["Đón khách"]
-    T04["Trip In Progress<br/>Chuyến đi đang thực hiện"]
-    T05["Trip Completed<br/>Hoàn thành chuyến"]
-
-    N01 --> T01 --> T02 --> T03 --> T04 --> T05
-
-    P01["Pricing & Payment<br/>Tính cước"]
-    P02{"Phương thức<br/>thanh toán?"}
-
-    T05 --> P01 --> P02
-
-    P02 -- "Tiền mặt" --> P03["Ghi nhận<br/>thanh toán tiền mặt"]
-
-    P02 -- "Điện tử" --> P04["Payment Gateway"]
-
-    P04 --> P05{"Thanh toán<br/>thành công?"}
-
-    P05 -- "Không" --> P06["Thông báo<br/>thanh toán thất bại"]
-    P06 --> P07["Retry Payment"]
-    P07 --> P04
-
-    P05 -- "Có" --> P08["Ghi nhận<br/>thanh toán thành công"]
-
-    P03 --> P09["Payment Completed"]
-    P08 --> P09
-
-    R01["Khách hàng<br/>Đánh giá tài xế"]
-
-    P09 --> R01
-
-    O01["Admin & Analytics<br/>Lưu lịch sử & giao dịch"]
-    O02["Theo dõi chuyến đi<br/>và trạng thái tài xế"]
-
-    T04 -.-> O02
-    T05 --> O01
-    P09 --> O01
-
-    R01 --> END
+    X --> AA[Hoàn tất chuyến đi]
+    AA --> AB[Khách hàng đánh giá tài xế]
+    AB --> AC([End])R01 --> END
 
 
 ```
