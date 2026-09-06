@@ -94,6 +94,48 @@ flowchart TB
     style C09 fill:#FFFFFF,stroke:#2563EB
     style C10 fill:#FFFFFF,stroke:#2563EB
 ```
+## 2. System Modules
+
+```mermaid
+flowchart TB
+
+    CAB(("CAB System"))
+
+    M01["M01<br/>Authentication & User Management"]
+    M02["M02<br/>Customer Management"]
+    M03["M03<br/>Driver & Vehicle Management"]
+    M04["M04<br/>Booking Management"]
+    M05["M05<br/>Driver Matching & Dispatch"]
+    M06["M06<br/>Trip Management & Tracking"]
+    M07["M07<br/>Fare & Payment"]
+    M08["M08<br/>Notification"]
+    M09["M09<br/>Rating & Review"]
+    M10["M10<br/>Operation & Administration"]
+
+    CAB --> M01
+    CAB --> M02
+    CAB --> M03
+    CAB --> M04
+    CAB --> M05
+    CAB --> M06
+    CAB --> M07
+    CAB --> M08
+    CAB --> M09
+    CAB --> M10
+
+    style CAB fill:#2563EB,color:#FFFFFF,stroke:#1E40AF,stroke-width:3px
+
+    style M01 fill:#FFFFFF,stroke:#2563EB
+    style M02 fill:#FFFFFF,stroke:#2563EB
+    style M03 fill:#FFFFFF,stroke:#2563EB
+    style M04 fill:#FFFFFF,stroke:#2563EB
+    style M05 fill:#FFFFFF,stroke:#2563EB
+    style M06 fill:#FFFFFF,stroke:#2563EB
+    style M07 fill:#FFFFFF,stroke:#2563EB
+    style M08 fill:#FFFFFF,stroke:#2563EB
+    style M09 fill:#FFFFFF,stroke:#2563EB
+    style M10 fill:#FFFFFF,stroke:#2563EB
+```
 ## 3. Business Requirements
 
 ```mermaid
@@ -146,6 +188,7 @@ flowchart TB
     style BR11 fill:#FFFFFF,stroke:#2563EB
     style BR12 fill:#FFFFFF,stroke:#2563EB
     style BR13 fill:#FFFFFF,stroke:#2563EB
+
     style BR14 fill:#FFFFFF,stroke:#2563EB
     style BR15 fill:#FFFFFF,stroke:#2563EB
     style BR16 fill:#FFFFFF,stroke:#2563EB
