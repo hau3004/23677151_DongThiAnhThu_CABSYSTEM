@@ -243,29 +243,6 @@ flowchart TB
     style BR17 fill:#FFFFFF,stroke:#2563EB
 ```
 
-### Business Requirements Table
-
-| ID | Business Requirement | Module | Priority |
-| :--- | :--- | :--- | :--- |
-| **BR-01** | Lựa chọn loại xe/dịch vụ | Customer Management | Must Have |
-| **BR-02** | Nhập điểm đón và điểm đến | Booking Management | Must Have |
-| **BR-03** | Tạo yêu cầu đặt xe | Booking Management | Must Have |
-| **BR-04** | Theo dõi trạng thái chuyến | Trip Management & Tracking | Must Have |
-| **BR-05** | Lựa chọn phương thức thanh toán | Fare & Payment | Must Have |
-| **BR-06** | Xem lịch sử chuyến đi | Trip Management & Tracking | Must Have |
-| **BR-07** | Đánh giá tài xế | Rating & Review | Should Have |
-| **BR-08** | Tự động tìm và phân công tài xế | Driver Matching & Dispatch | Must Have |
-| **BR-09** | Chấp nhận hoặc từ chối chuyến | Driver Matching & Dispatch | Must Have |
-| **BR-10** | Cập nhật trạng thái chuyến | Trip Management & Tracking | Must Have |
-| **BR-11** | Tính cước chuyến đi | Fare & Payment | Must Have |
-| **BR-12** | Thanh toán tiền mặt và điện tử | Fare & Payment | Must Have |
-| **BR-13** | Gửi thông báo | Notification | Must Have |
-| **BR-14** | Quản lý và giám sát chuyến | Operation & Administration | Must Have |
-| **BR-15** | Báo cáo hoạt động và doanh thu | Operation & Administration | Should Have |
-| **BR-16** | Kiểm soát quyền truy cập theo vai trò | Authentication & User Management | Must Have |
-| **BR-17** | Lưu vết các thao tác quan trọng | Operation & Administration | Should Have |
-## 6. Xây dựng mô hình quy trình nghiệp vụ
-
 ## 6. Xây dựng mô hình quy trình nghiệp vụ
 
 ```mermaid
@@ -297,10 +274,10 @@ flowchart TD
     R --> S[Kết thúc chuyến đi]
 
     S --> T[Tính cước phí]
-    T --> U{Phương thức thanh toán}
+    T --> U{Phương thức thanh toán?}
 
     U -- Tiền mặt --> V[Thanh toán tiền mặt]
-    U -- Điện tử --> W[Thực hiện thanh toán điện tử]
+    U -- Điện tử --> W[Thanh toán điện tử]
 
     V --> X[Ghi nhận thanh toán]
     W --> Y{Thanh toán thành công?}
@@ -311,7 +288,407 @@ flowchart TD
 
     X --> AA[Hoàn tất chuyến đi]
     AA --> AB[Khách hàng đánh giá tài xế]
-    AB --> AC([End])R01 --> END
-
-
+    AB --> AC([End])
 ```
+
+---
+
+## 7. Functional Requirements
+
+### FR01 - Đăng nhập
+
+```text
+FR01:
+Hệ thống cho phép khách hàng, tài xế và nhân viên đăng nhập.
+Hệ thống kiểm tra thông tin tài khoản trước khi cho phép truy cập.
+```
+
+### FR02 - Đặt chuyến
+
+```text
+FR02:
+Khách hàng chọn loại xe/dịch vụ.
+Khách hàng nhập điểm đón và điểm đến.
+Khách hàng chọn phương thức thanh toán.
+Khách hàng gửi yêu cầu đặt chuyến.
+```
+
+### FR03 - Phân công tài xế
+
+```text
+FR03:
+Hệ thống tìm tài xế phù hợp.
+Hệ thống gửi yêu cầu chuyến đến tài xế.
+Hệ thống ghi nhận tài xế chấp nhận chuyến.
+```
+
+### FR04 - Theo dõi chuyến
+
+```text
+FR04:
+Hệ thống hiển thị trạng thái chuyến.
+Hệ thống cập nhật vị trí tài xế.
+Hệ thống cập nhật trạng thái chuyến.
+```
+
+### FR05 - Thanh toán
+
+```text
+FR05:
+Hệ thống tính cước chuyến đi.
+Hệ thống hỗ trợ thanh toán tiền mặt và thanh toán điện tử.
+Hệ thống ghi nhận kết quả thanh toán.
+```
+
+### FR06 - Thông báo
+
+```text
+FR06:
+Hệ thống gửi thông báo khi tài xế nhận chuyến.
+Hệ thống gửi thông báo khi trạng thái chuyến thay đổi.
+Hệ thống gửi thông báo kết quả thanh toán.
+```
+
+### FR07 - Đánh giá
+
+```text
+FR07:
+Khách hàng được đánh giá tài xế sau khi chuyến đi hoàn thành.
+Hệ thống lưu điểm đánh giá và nhận xét.
+```
+
+### FR08 - Quản lý vận hành
+
+```text
+FR08:
+Nhân viên vận hành có thể theo dõi chuyến đi.
+Nhân viên có thể quản lý trạng thái chuyến.
+Nhân viên có thể xem báo cáo hoạt động và doanh thu.
+```
+
+---
+
+## 8. Business Rules & Exceptions
+
+### 8.1. Business Rules
+
+```text
+BRULE-01:
+Khách hàng phải đăng nhập trước khi đặt chuyến.
+
+BRULE-02:
+Điểm đón và điểm đến phải hợp lệ trước khi gửi yêu cầu.
+
+BRULE-03:
+Chỉ tài xế đang ở trạng thái sẵn sàng mới được phân công chuyến.
+
+BRULE-04:
+Tài xế phải chấp nhận chuyến trước khi chuyến được xác nhận.
+
+BRULE-05:
+Cước chuyến được tính dựa trên thông tin của chuyến đi.
+
+BRULE-06:
+Thanh toán được thực hiện sau khi chuyến đi hoàn thành.
+
+BRULE-07:
+Khách hàng chỉ được đánh giá tài xế sau khi chuyến đi hoàn thành.
+```
+
+### 8.2. Exceptions
+
+```text
+EX-01:
+Không tìm thấy tài xế.
+Hệ thống thông báo cho khách hàng và cho phép thử lại.
+
+EX-02:
+Tài xế từ chối chuyến.
+Hệ thống tiếp tục tìm tài xế khác.
+
+EX-03:
+Khách hàng hủy chuyến.
+Hệ thống cập nhật trạng thái chuyến thành Cancelled.
+
+EX-04:
+Thanh toán điện tử thất bại.
+Hệ thống thông báo lỗi và cho phép thanh toán lại.
+
+EX-05:
+Mất kết nối mạng.
+Hệ thống giữ trạng thái hiện tại và cập nhật dữ liệu khi kết nối lại.
+```
+
+---
+
+## 9. Non-Functional Requirements
+
+```text
+NFR01 - Performance:
+Hệ thống phải phản hồi các thao tác chính trong thời gian hợp lý.
+
+NFR02 - Availability:
+Hệ thống phải hoạt động ổn định và hạn chế thời gian gián đoạn.
+
+NFR03 - Security:
+Hệ thống phải bảo vệ tài khoản, dữ liệu cá nhân và dữ liệu giao dịch.
+
+NFR04 - Scalability:
+Hệ thống phải có khả năng mở rộng khi số lượng người dùng và chuyến đi tăng.
+
+NFR05 - Reliability:
+Hệ thống phải đảm bảo dữ liệu không bị mất hoặc sai lệch trong quá trình xử lý.
+
+NFR06 - Maintainability:
+Hệ thống phải dễ bảo trì, nâng cấp và sửa lỗi.
+
+NFR07 - Compatibility:
+Hệ thống phải hỗ trợ các môi trường và thiết bị được xác định trong phạm vi dự án.
+```
+
+---
+
+## 10. Mô hình hóa dữ liệu
+
+### 10.1. Entity
+
+```text
+User:
+Lưu thông tin tài khoản người dùng.
+
+Customer:
+Lưu thông tin khách hàng.
+
+Driver:
+Lưu thông tin tài xế.
+
+Vehicle:
+Lưu thông tin phương tiện.
+
+Booking:
+Lưu thông tin yêu cầu đặt chuyến.
+
+Trip:
+Lưu thông tin chuyến đi.
+
+Payment:
+Lưu thông tin thanh toán.
+
+Rating:
+Lưu thông tin đánh giá tài xế.
+
+Notification:
+Lưu thông tin thông báo.
+```
+
+### 10.2. Entity Relationship Diagram
+
+```mermaid
+erDiagram
+
+    USER ||--o| CUSTOMER : has
+    USER ||--o| DRIVER : has
+    DRIVER ||--o{ VEHICLE : owns
+    CUSTOMER ||--o{ BOOKING : creates
+    DRIVER ||--o{ BOOKING : accepts
+    BOOKING ||--|| TRIP : creates
+    DRIVER ||--o{ TRIP : performs
+    TRIP ||--|| PAYMENT : has
+    TRIP ||--o| RATING : receives
+    USER ||--o{ NOTIFICATION : receives
+
+    USER {
+        int UserID PK
+        string Username
+        string Password
+        string Role
+        string Status
+    }
+
+    CUSTOMER {
+        int CustomerID PK
+        int UserID FK
+        string FullName
+        string Phone
+        string Address
+    }
+
+    DRIVER {
+        int DriverID PK
+        int UserID FK
+        string FullName
+        string Phone
+        string LicenseNumber
+        string Status
+    }
+
+    VEHICLE {
+        int VehicleID PK
+        int DriverID FK
+        string LicensePlate
+        string VehicleType
+        string Brand
+        string Status
+    }
+
+    BOOKING {
+        int BookingID PK
+        int CustomerID FK
+        int DriverID FK
+        string PickupLocation
+        string Destination
+        string VehicleType
+        string PaymentMethod
+        string Status
+        datetime CreatedAt
+    }
+
+    TRIP {
+        int TripID PK
+        int BookingID FK
+        int DriverID FK
+        datetime StartTime
+        datetime EndTime
+        string Status
+        decimal Fare
+    }
+
+    PAYMENT {
+        int PaymentID PK
+        int TripID FK
+        decimal Amount
+        string PaymentMethod
+        string Status
+        datetime PaymentTime
+    }
+
+    RATING {
+        int RatingID PK
+        int TripID FK
+        int CustomerID FK
+        int DriverID FK
+        int Score
+        string Comment
+    }
+
+    NOTIFICATION {
+        int NotificationID PK
+        int UserID FK
+        string Title
+        string Message
+        string Status
+        datetime CreatedAt
+    }
+```
+
+---
+
+## 11. Use Case Diagram
+
+```mermaid
+flowchart LR
+
+    Customer["Customer"]
+    Driver["Driver"]
+    Staff["Staff"]
+    Admin["Admin"]
+
+    UC01(["UC01 - Login"])
+    UC02(["UC02 - Booking"])
+    UC03(["UC03 - Track Trip"])
+    UC04(["UC04 - Payment"])
+    UC05(["UC05 - Rate Driver"])
+    UC06(["UC06 - Receive / Process Trip"])
+    UC07(["UC07 - Manage Trip"])
+    UC08(["UC08 - Manage Users"])
+
+    Customer --> UC01
+    Customer --> UC02
+    Customer --> UC03
+    Customer --> UC04
+    Customer --> UC05
+
+    Driver --> UC01
+    Driver --> UC06
+    Driver --> UC03
+
+    Staff --> UC01
+    Staff --> UC07
+
+    Admin --> UC01
+    Admin --> UC08
+    Admin --> UC07
+```
+## 12. Acceptance Criteria
+
+### AC01 - Đăng nhập
+
+- Người dùng nhập đúng tài khoản và mật khẩu.
+- Hệ thống cho phép người dùng đăng nhập thành công.
+- Người dùng nhập sai tài khoản hoặc mật khẩu.
+- Hệ thống hiển thị thông báo lỗi.
+- Người dùng chưa nhập đầy đủ thông tin.
+- Hệ thống yêu cầu người dùng nhập đầy đủ thông tin.
+
+### AC02 - Đặt chuyến
+
+- Khách hàng chọn loại xe hợp lệ.
+- Khách hàng nhập đầy đủ điểm đón và điểm đến.
+- Khách hàng chọn phương thức thanh toán.
+- Hệ thống kiểm tra thông tin đặt chuyến.
+- Nếu thông tin hợp lệ, hệ thống tạo yêu cầu đặt chuyến thành công.
+- Nếu thông tin không hợp lệ, hệ thống hiển thị thông báo lỗi.
+
+### AC03 - Phân công tài xế
+
+- Hệ thống tìm kiếm các tài xế đang sẵn sàng.
+- Hệ thống gửi yêu cầu chuyến đến tài xế phù hợp.
+- Tài xế chấp nhận chuyến.
+- Hệ thống cập nhật tài xế cho chuyến đi.
+- Tài xế từ chối chuyến.
+- Hệ thống tìm kiếm tài xế khác.
+
+### AC04 - Theo dõi chuyến
+
+- Khách hàng xem được trạng thái hiện tại của chuyến.
+- Hệ thống cập nhật trạng thái khi tài xế nhận chuyến.
+- Hệ thống cập nhật trạng thái khi tài xế đang di chuyển đến điểm đón.
+- Hệ thống cập nhật trạng thái khi tài xế đã đến điểm đón.
+- Hệ thống cập nhật trạng thái khi chuyến bắt đầu.
+- Hệ thống cập nhật trạng thái khi chuyến hoàn thành.
+
+### AC05 - Thanh toán
+
+- Hệ thống tính cước phí dựa trên thông tin chuyến đi.
+- Khách hàng có thể chọn thanh toán bằng tiền mặt.
+- Khách hàng có thể chọn thanh toán điện tử.
+- Thanh toán thành công.
+- Hệ thống ghi nhận thông tin thanh toán.
+- Thanh toán điện tử thất bại.
+- Hệ thống thông báo lỗi và cho phép khách hàng thanh toán lại.
+
+### AC06 - Thông báo
+
+- Hệ thống gửi thông báo khi tài xế nhận chuyến.
+- Hệ thống gửi thông báo khi tài xế đến điểm đón.
+- Hệ thống gửi thông báo khi chuyến bắt đầu.
+- Hệ thống gửi thông báo khi chuyến hoàn thành.
+- Hệ thống gửi thông báo kết quả thanh toán.
+
+### AC07 - Đánh giá tài xế
+
+- Khách hàng chỉ được đánh giá sau khi chuyến hoàn thành.
+- Khách hàng nhập điểm đánh giá.
+- Khách hàng có thể nhập nhận xét.
+- Hệ thống kiểm tra thông tin đánh giá.
+- Hệ thống lưu đánh giá thành công.
+- Khách hàng không thể đánh giá chuyến chưa hoàn thành.
+
+### AC08 - Quản lý vận hành
+
+- Nhân viên vận hành xem được danh sách chuyến.
+- Nhân viên vận hành xem được trạng thái của từng chuyến.
+- Nhân viên vận hành theo dõi được hoạt động của tài xế.
+- Nhân viên vận hành có thể quản lý các chuyến đang hoạt động.
+- Hệ thống cung cấp báo cáo hoạt động.
+- Hệ thống cung cấp báo cáo doanh thu.
