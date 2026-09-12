@@ -1,22 +1,13 @@
 # CAB System - Business Goals
-
-## 1. Stakeholder List & Roles
-
-| Stakeholder | Vai trò chính |
-| :--- | :--- |
-| **Ban Giám đốc** | Ra quyết định chiến lược, phê duyệt ngân sách và định hướng phát triển hệ thống. |
-| **Khách hàng** | Đăng ký, đặt xe, theo dõi chuyến đi, thanh toán và đánh giá tài xế. |
-| **Tài xế** | Nhận chuyến, chấp nhận/từ chối chuyến và cập nhật trạng thái chuyến đi. |
-| **Nhân viên vận hành** | Theo dõi, giám sát chuyến đi và xử lý các tình huống phát sinh. |
-| **Quản trị viên hệ thống** | Quản lý tài khoản, phân quyền và cấu hình hệ thống. |
-| **Kế toán / Tài chính** | Theo dõi giao dịch, thanh toán và doanh thu. |
-| **Chăm sóc khách hàng** | Hỗ trợ khách hàng và xử lý các vấn đề phát sinh. |
-| **Business Analyst (BA)** | Phân tích, đặc tả và quản lý yêu cầu nghiệp vụ. |
-| **Nhóm Phát triển (Dev/QA)** | Thiết kế, phát triển và kiểm thử hệ thống. |
-| **DevOps / IT** | Triển khai, vận hành và đảm bảo tính ổn định của hệ thống. |
-| **Payment Provider** | Cung cấp dịch vụ thanh toán điện tử. |
-| **Map / Location Provider** | Cung cấp dữ liệu bản đồ, vị trí và hỗ trợ tính toán ETA. |
-| **Notification Provider** | Cung cấp dịch vụ gửi thông báo. |
+# 1. STAKEHOLDERS
+| STT | Stakeholder | Vai trò / Mối quan tâm |
+|---|---|---|
+| 1 | Khách hàng | Đăng ký tài khoản, đặt xe, theo dõi chuyến đi, thanh toán và đánh giá tài xế. |
+| 2 | Tài xế | Nhận và thực hiện chuyến xe, cập nhật trạng thái chuyến, thông tin phương tiện và vị trí. |
+| 3 | Nhân viên vận hành | Quản lý khách hàng, tài xế, phương tiện và chuyến đi; theo dõi và xử lý các trường hợp phát sinh. |
+| 4 | Ban lãnh đạo Công ty ABC | Theo dõi doanh thu, số lượng chuyến, tỷ lệ hoàn thành, tỷ lệ hủy và hiệu quả hoạt động của tài xế. |
+| 5 | Nhà cung cấp thanh toán | Xử lý các giao dịch thanh toán điện tử cho hệ thống CAB. |
+| 6 | Nhà cung cấp dịch vụ thông báo | Cung cấp các kênh gửi thông báo đến khách hàng và tài xế. |
 
 ## 2. Stakeholder Matrix
 
