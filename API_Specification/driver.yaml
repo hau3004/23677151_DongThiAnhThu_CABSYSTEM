@@ -1,0 +1,321 @@
+openapi: 3.0.3
+info:
+  title: CAB System API - Driver Operations
+  description: |
+    API Specification cho phân hệ Vận hành của Tài xế trong hệ thống đặt xe CAB.
+    Bao gồm các chức năng: Nhận/Từ chối chuyến (FR-12, FR-14, FR-15), Cập nhật trạng thái chuyến đi (FR-16), Cập nhật vị trí (FR-17) và Xác nhận thanh toán tiền mặt (FR-22).
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@cabsystem.vn
+
+servers:
+  - url: https://api.cabsystem.local/v1
+    description: Môi trường phát triển cục bộ
+
+tags:
+  - name: Trip Requests
+    description: Xử lý các yêu cầu điều phối chuyến xe từ hệ thống
+  - name: Trip Execution
+    description: Các API cập nhật trạng thái trong quá trình thực hiện chuyến đi
+  - name: Driver Location
+    description: Cập nhật vị trí GPS thời gian thực của tài xế
+
+paths:
+  /drivers/me/trips/requests/{tripId}/accept:
+    post:
+      tags:
+        - Trip Requests
+      summary: Chấp nhận yêu cầu chuyến xe (UC15)
+      description: |
+        Tài xế đồng ý nhận chuyến xe mà hệ thống phân công. 
+        Trạng thái chuyến (TripStatus) sẽ chuyển thành CONFIRMED (BRL-14).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID của chuyến đi
+      responses:
+        '200':
+          description: Nhận chuyến thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripResponse'
+        '400':
+          description: Chuyến xe đã bị hủy hoặc đã được tài xế khác nhận
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /drivers/me/trips/requests/{tripId}/reject:
+    post:
+      tags:
+        - Trip Requests
+      summary: Từ chối yêu cầu chuyến xe (UC15)
+      description: |
+        Tài xế từ chối chuyến xe. Hệ thống sẽ tiếp tục tìm tài xế khác (FR-14, BRL-13).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Đã từ chối chuyến thành công (Không trả về content)
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /drivers/me/trips/{tripId}/status:
+    patch:
+      tags:
+        - Trip Execution
+      summary: Cập nhật trạng thái chuyến đi (UC17, UC20)
+      description: |
+        Tài xế cập nhật trạng thái theo trình tự: ARRIVED_AT_PICKUP -> IN_PROGRESS (đã đón khách) -> COMPLETED (BRL-16).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTripStatusRequest'
+      responses:
+        '200':
+          description: Cập nhật trạng thái thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripResponse'
+        '400':
+          description: Trạng thái cập nhật không hợp lệ (Sai trình tự BRL-16)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /drivers/me/trips/{tripId}/cash-confirm:
+    post:
+      tags:
+        - Trip Execution
+      summary: Xác nhận đã nhận tiền mặt (UC23)
+      description: |
+        Dành cho chuyến xe thanh toán bằng tiền mặt. Tài xế xác nhận đã nhận đủ tiền từ khách (FR-22, BRL-21).
+        Trạng thái Payment chuyển từ UNPAID sang PAID.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Xác nhận thanh toán thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '400':
+          description: Chuyến xe không dùng tiền mặt hoặc chưa hoàn thành
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /drivers/me/location:
+    post:
+      tags:
+        - Driver Location
+      summary: Cập nhật vị trí thời gian thực (UC18)
+      description: |
+        App tài xế liên tục đẩy tọa độ GPS lên server trong quá trình thực hiện chuyến (FR-17, BRL-17).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationUpdateRequest'
+      responses:
+        '204':
+          description: Cập nhật vị trí thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /drivers/me/trips:
+    get:
+      tags:
+        - Trip Execution
+      summary: Xem lịch sử các chuyến đi của tài xế
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          description: Lọc theo trạng thái chuyến đi (COMPLETED, CANCELLED, ...)
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Danh sách chuyến đi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TripResponse'
+                  total:
+                    type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Không có quyền truy cập (Chưa đăng nhập hoặc token hết hạn)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Hành động bị từ chối (Chỉ Tài xế mới được dùng API này)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    UpdateTripStatusRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: 
+            - ARRIVED_AT_PICKUP # Đã đến điểm đón
+            - IN_PROGRESS       # Đã đón khách & đang di chuyển
+            - COMPLETED         # Hoàn thành chuyến
+
+    LocationUpdateRequest:
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: number
+          format: double
+          example: 10.762622
+        longitude:
+          type: number
+          format: double
+          example: 106.660172
+        heading:
+          type: number
+          format: float
+          description: Hướng di chuyển của xe (từ 0 đến 360 độ)
+          example: 90.5
+
+    TripResponse:
+      type: object
+      properties:
+        tripId:
+          type: integer
+        customerId:
+          type: integer
+        driverId:
+          type: integer
+        pickupLocation:
+          type: string
+        destination:
+          type: string
+        vehicleType:
+          type: string
+        estimatedFare:
+          type: number
+          format: double
+        actualFare:
+          type: number
+          format: double
+        tripStatus:
+          type: string
+          enum: [SEARCHING_DRIVER, DRIVER_ASSIGNED, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED]
+        paymentMethod:
+          type: string
+          enum: [CASH, E_WALLET, CREDIT_CARD]
+
+    PaymentResponse:
+      type: object
+      properties:
+        paymentId:
+          type: integer
+        tripId:
+          type: integer
+        paymentMethod:
+          type: string
+        amount:
+          type: number
+          format: double
+        paymentStatus:
+          type: string
+          enum: [PENDING, PAID, FAILED, UNPAID]
+        paymentTime:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
