@@ -1,0 +1,266 @@
+openapi: 3.0.3
+info:
+  title: CAB System API - Rating & Reviews
+  description: |
+    API Specification cho phân hệ Đánh giá Tài xế của hệ thống CAB.
+    Bao gồm API cho Khách hàng gửi đánh giá (FR-31, FR-32, EC-16), Tài xế xem điểm đánh giá của mình, 
+    và Vận hành viên quản lý các lượt đánh giá (phục vụ báo cáo FR-38).
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@cabsystem.vn
+
+servers:
+  - url: https://api.cabsystem.local/v1
+    description: Môi trường phát triển cục bộ
+
+tags:
+  - name: Customer Rating
+    description: Khách hàng thực hiện đánh giá chuyến đi
+  - name: Driver Rating
+    description: Tài xế tra cứu điểm số và nhận xét từ khách hàng
+  - name: Admin Rating
+    description: Quản trị viên/Nhân viên vận hành theo dõi và quản lý đánh giá
+
+paths:
+  /trips/{tripId}/ratings:
+    post:
+      tags:
+        - Customer Rating
+      summary: Đánh giá chuyến đi (UC31, UC32)
+      description: |
+        Khách hàng gửi đánh giá (1-5 sao) và nhận xét cho Tài xế.
+        **Ràng buộc (BRL-25, EC-16):**
+        - Chuyến đi phải ở trạng thái COMPLETED.
+        - Mỗi chuyến đi chỉ được đánh giá 1 lần (RI-13).
+        - Khách hàng chỉ được đánh giá chuyến đi do chính mình đặt.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RatingRequest'
+      responses:
+        '201':
+          description: Lưu đánh giá thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RatingResponse'
+        '400':
+          description: Vi phạm logic nghiệp vụ (EC-16 - Chuyến chưa hoàn thành, hoặc đã đánh giá rồi)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Chuyến đi không thuộc về tài khoản Khách hàng này (EC-16)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      tags:
+        - Customer Rating
+      summary: Xem đánh giá của chuyến đi
+      description: Lấy thông tin đánh giá đã được gửi cho một chuyến đi cụ thể.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Chi tiết đánh giá
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RatingResponse'
+        '404':
+          description: Chuyến đi chưa có đánh giá
+
+  /drivers/me/ratings:
+    get:
+      tags:
+        - Driver Rating
+      summary: Tài xế xem thống kê và danh sách đánh giá
+      description: |
+        API giúp Tài xế tự theo dõi chất lượng phục vụ của mình. 
+        Trả về điểm trung bình và danh sách các nhận xét gần nhất.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Thống kê đánh giá của Tài xế
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DriverRatingSummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Chỉ Tài xế mới được phép gọi API này
+
+  /admin/ratings:
+    get:
+      tags:
+        - Admin Rating
+      summary: Lấy danh sách đánh giá (Dành cho Vận hành)
+      description: |
+        Nhân viên vận hành tra cứu danh sách đánh giá trên toàn hệ thống để giám sát hiệu quả của Tài xế (FR-36, FR-38).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: driverId
+          in: query
+          description: Lọc theo ID tài xế
+          schema:
+            type: integer
+        - name: minScore
+          in: query
+          description: Lọc đánh giá từ mức sao trở lên (vd tìm các chuyến 1-2 sao để xử lý sự cố)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Danh sách đánh giá
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RatingListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Không có quyền truy cập (Dành cho Role OPERATOR / MANAGER)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Không có quyền truy cập (Chưa đăng nhập hoặc Token hết hạn)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    RatingRequest:
+      type: object
+      required:
+        - ratingScore
+      properties:
+        ratingScore:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: Điểm đánh giá (1 đến 5 sao)
+        comment:
+          type: string
+          maxLength: 500
+          description: Lời nhận xét của khách hàng (không bắt buộc)
+          example: "Tài xế nhiệt tình, xe rất sạch sẽ!"
+
+    RatingResponse:
+      type: object
+      properties:
+        ratingId:
+          type: integer
+        tripId:
+          type: integer
+        customerId:
+          type: integer
+        driverId:
+          type: integer
+        ratingScore:
+          type: integer
+        comment:
+          type: string
+        ratingTime:
+          type: string
+          format: date-time
+          description: Thời gian khách hàng thực hiện đánh giá
+
+    DriverRatingSummary:
+      type: object
+      properties:
+        averageScore:
+          type: number
+          format: float
+          description: Điểm số trung bình của Tài xế
+          example: 4.85
+        totalRatings:
+          type: integer
+          description: Tổng số lượt đánh giá đã nhận
+          example: 120
+        recentReviews:
+          type: array
+          description: Danh sách các đánh giá mới nhất (phân trang)
+          items:
+            $ref: '#/components/schemas/RatingResponse'
+        total:
+          type: integer
+          description: Hỗ trợ phân trang cho danh sách recentReviews
+
+    RatingListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/RatingResponse'
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
