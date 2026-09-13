@@ -1,0 +1,269 @@
+openapi: 3.0.3
+info:
+  title: CAB System API - Payment Management
+  description: |
+    API Specification cho phân hệ Thanh toán (Payment) của hệ thống CAB.
+    Bao gồm tích hợp Webhook từ Payment Gateway, Khách hàng thử lại thanh toán khi thất bại (EC-03) 
+    và API cho Nhân viên vận hành xử lý các ngoại lệ thanh toán tiền mặt (EC-13, EC-14).
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@cabsystem.vn
+
+servers:
+  - url: https://api.cabsystem.local/v1
+    description: Môi trường phát triển cục bộ
+
+tags:
+  - name: Payment Transactions
+    description: Truy xuất thông tin giao dịch thanh toán của chuyến đi
+  - name: Payment Gateway
+    description: Các endpoint giao tiếp với nhà cung cấp dịch vụ thanh toán (VNPay, MoMo, ZaloPay,...)
+  - name: Operator Payment Actions
+    description: API dành cho Nhân viên vận hành xử lý các sự cố liên quan đến thanh toán
+
+paths:
+  /trips/{tripId}/payment:
+    get:
+      tags:
+        - Payment Transactions
+      summary: Xem trạng thái thanh toán của chuyến đi (UC27)
+      description: Trả về thông tin thực thể PAYMENT tương ứng với chuyến đi. Cho phép Khách hàng, Tài xế và Vận hành tra cứu.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Chi tiết giao dịch thanh toán
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Chưa có giao dịch thanh toán nào được tạo cho chuyến này
+
+  /payments/{paymentId}/retry:
+    post:
+      tags:
+        - Payment Transactions
+      summary: Yêu cầu thanh toán lại (Xử lý EC-03)
+      description: |
+        Trong trường hợp Khách hàng chọn thanh toán điện tử nhưng giao dịch bị thất bại (FAILED), 
+        API này cho phép Khách hàng tạo lại link thanh toán mới mà không cần đặt lại toàn bộ chuyến xe.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                paymentMethod:
+                  type: string
+                  description: Có thể chọn lại phương thức thanh toán điện tử khác
+                  example: "E_WALLET"
+      responses:
+        '200':
+          description: Yêu cầu tạo lại giao dịch thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  paymentUrl:
+                    type: string
+                    description: Link thanh toán mới
+        '400':
+          description: Giao dịch này đã được thanh toán (PAID) trước đó, không thể retry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /payments/webhook:
+    post:
+      tags:
+        - Payment Gateway
+      summary: Webhook nhận kết quả giao dịch (UC25, UC26)
+      description: |
+        Endpoint được gọi bởi Payment Gateway khi khách hàng hoàn tất việc quét mã / nhập thẻ trên trang thanh toán.
+        - `SUCCESS` -> Đổi trạng thái PAYMENT thành PAID -> Kích hoạt tìm Tài xế.
+        - `FAILED` -> Đổi trạng thái PAYMENT thành FAILED -> Thông báo cho Khách hàng (EC-03).
+      security:
+        - gatewaySignature: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentWebhookPayload'
+      responses:
+        '200':
+          description: Hệ thống CAB ghi nhận webhook thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ack:
+                    type: boolean
+                    example: true
+        '400':
+          description: Payload không hợp lệ hoặc sai chữ ký (Signature)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/payments/{paymentId}/resolve:
+    patch:
+      tags:
+        - Operator Payment Actions
+      summary: Xử lý ngoại lệ thanh toán tiền mặt (EC-13, EC-14)
+      description: |
+        API dành cho Nhân viên vận hành (Operator).
+        Dùng để xử lý các chuyến đi bằng tiền mặt mà Tài xế quên xác nhận hoặc Khách hàng chưa trả tiền (UNPAID).
+        Vận hành viên có thể chuyển trạng thái ép buộc thành PAID sau khi xác minh qua tổng đài.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolvePaymentRequest'
+      responses:
+        '200':
+          description: Xử lý sự cố thanh toán thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Không có quyền truy cập (Chỉ Operator / Manager)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    gatewaySignature:
+      type: apiKey
+      in: header
+      name: X-Webhook-Signature
+      description: HMAC SHA256 Signature do Payment Gateway tạo ra để CAB System xác thực tính toàn vẹn của Payload.
+
+  responses:
+    Unauthorized:
+      description: Phiên đăng nhập hết hạn hoặc Token không hợp lệ (EC-17)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    PaymentResponse:
+      type: object
+      properties:
+        paymentId:
+          type: integer
+        tripId:
+          type: integer
+        paymentMethod:
+          type: string
+          enum: [CASH, E_WALLET, CREDIT_CARD]
+        amount:
+          type: number
+          format: double
+        paymentStatus:
+          type: string
+          enum: [PENDING, PAID, FAILED, UNPAID]
+          description: |
+            PENDING: Chờ khách thanh toán (Điện tử)
+            PAID: Đã thanh toán xong
+            FAILED: Giao dịch điện tử thất bại
+            UNPAID: Chuyến tiền mặt đã hoàn thành nhưng chưa xác nhận thu tiền
+        transactionId:
+          type: string
+          description: Mã giao dịch lưu vết từ Payment Gateway
+        paymentTime:
+          type: string
+          format: date-time
+          description: Thời điểm giao dịch thành công
+
+    PaymentWebhookPayload:
+      type: object
+      required:
+        - tripId
+        - transactionId
+        - amount
+        - paymentStatus
+      properties:
+        tripId:
+          type: integer
+          description: ID của chuyến đi trong CAB System
+        transactionId:
+          type: string
+          description: Mã giao dịch (Reference ID) trên hệ thống Gateway
+        amount:
+          type: number
+          format: double
+        paymentStatus:
+          type: string
+          enum: [SUCCESS, FAILED]
+          description: Trạng thái trả về từ ví điện tử/ngân hàng
+        message:
+          type: string
+          description: Diễn giải trạng thái (ví dụ "Khách hàng hủy giao dịch", "Số dư không đủ")
+
+    ResolvePaymentRequest:
+      type: object
+      required:
+        - status
+        - note
+      properties:
+        status:
+          type: string
+          enum: [PAID, FAILED]
+          description: Trạng thái Vận hành viên muốn set cho giao dịch này
+        note:
+          type: string
+          description: Ghi chú xử lý (Bắt buộc để lưu log truy vết NFR-16)
+          example: "Đã gọi điện cho Tài xế Nguyễn Văn A, xác nhận đã nhận 50.000 VNĐ tiền mặt."
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
