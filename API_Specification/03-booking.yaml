@@ -1,4 +1,3 @@
-```yaml
 openapi: 3.0.3
 
 info:
@@ -530,6 +529,3 @@ components:
         message:
           type: string
           example: Thông tin yêu cầu không hợp lệ
-```
-
-
