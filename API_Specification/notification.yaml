@@ -1,0 +1,237 @@
+openapi: 3.0.3
+info:
+  title: CAB System API - Notification Services
+  description: |
+    API Specification cho phân hệ Quản lý Thông báo của hệ thống CAB.
+    Bao gồm API cho Mobile App (Khách hàng/Tài xế) để lấy danh sách thông báo, 
+    và các API nội bộ / Webhook xử lý trạng thái gửi thông báo từ Notification Provider (EC-15).
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@cabsystem.vn
+
+servers:
+  - url: https://api.cabsystem.local/v1
+    description: Môi trường phát triển cục bộ
+
+tags:
+  - name: User Notifications
+    description: Các API dành cho Khách hàng và Tài xế để lấy và quản lý thông báo của chính họ
+  - name: Notification Provider
+    description: Webhook nhận kết quả gửi (Delivery Receipt) từ đối tác thứ 3 (SMS, Email, Push)
+  - name: Internal System
+    description: API nội bộ để các phân hệ khác (Trip, Payment) kích hoạt việc gửi thông báo
+
+paths:
+  /notifications:
+    get:
+      tags:
+        - User Notifications
+      summary: Lấy danh sách thông báo của người dùng
+      description: |
+        App Khách hàng hoặc App Tài xế gọi API này để hiển thị hộp thư thông báo (Inbox).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: unreadOnly
+          in: query
+          description: Lọc chỉ lấy các thông báo chưa đọc
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Danh sách thông báo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /notifications/{notificationId}/read:
+    patch:
+      tags:
+        - User Notifications
+      summary: Đánh dấu thông báo đã đọc
+      description: Cập nhật trạng thái thông báo thành "Đã đọc" khi người dùng bấm vào.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: notificationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Cập nhật thành công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Thông báo không thuộc về người dùng này
+        '404':
+          description: Không tìm thấy thông báo
+
+  /notifications/provider/webhook:
+    post:
+      tags:
+        - Notification Provider
+      summary: Webhook nhận trạng thái gửi từ Notification Provider (Xử lý EC-15)
+      description: |
+        Đối tác cung cấp dịch vụ SMS/Push/Email gọi lại hệ thống CAB để báo kết quả gửi.
+        Nếu FAILED, hệ thống ghi nhận vào Entity NOTIFICATION để có cơ chế gửi lại (Retry mechanism) (EC-15).
+      security:
+        - providerApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProviderDeliveryReceipt'
+      responses:
+        '200':
+          description: Đã ghi nhận kết quả gửi
+        '400':
+          description: Dữ liệu không hợp lệ
+        '401':
+          description: Sai API Key của Provider
+
+  /internal/notifications/send:
+    post:
+      tags:
+        - Internal System
+      summary: Kích hoạt gửi thông báo (Nội bộ)
+      description: |
+        API nội bộ dùng để các core services khác gọi sang để kích hoạt tạo & gửi thông báo (FR-27 -> FR-30).
+        Ví dụ: Service Payment gọi API này để gửi thông báo kết quả thanh toán.
+      security:
+        - internalApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InternalSendNotificationRequest'
+      responses:
+        '202':
+          description: Hệ thống đã tiếp nhận yêu cầu và đưa vào hàng đợi (Queue) xử lý
+        '401':
+          description: Không có quyền gọi API nội bộ
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    providerApiKey:
+      type: apiKey
+      in: header
+      name: X-Provider-Key
+      description: API Key cấp cho Notification Provider để xác thực Webhook.
+    internalApiKey:
+      type: apiKey
+      in: header
+      name: X-Internal-Token
+      description: Token nội bộ để bảo mật giữa các Microservices.
+
+  responses:
+    Unauthorized:
+      description: Không có quyền truy cập
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    NotificationResponse:
+      type: object
+      properties:
+        notificationId:
+          type: integer
+        notificationType:
+          type: string
+          enum: 
+            - SEARCHING_DRIVER       # FR-27
+            - DRIVER_ACCEPTED        # FR-28
+            - PAYMENT_SUCCESS        # FR-29
+            - PAYMENT_FAILED         # FR-29 (EC-03)
+            - TRIP_COMPLETED         # FR-30
+            - NO_DRIVER_FOUND        # BR-17 (EC-05)
+            - SYSTEM_ALERT
+        content:
+          type: string
+          description: Nội dung thông báo hiển thị cho người dùng
+        status:
+          type: string
+          enum: [PENDING, SENT, FAILED]
+          description: Trạng thái gửi từ hệ thống
+        isRead:
+          type: boolean
+          description: Người dùng đã xem/đọc hay chưa
+        sentTime:
+          type: string
+          format: date-time
+
+    NotificationListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationResponse'
+        total:
+          type: integer
+        unreadCount:
+          type: integer
+
+    ProviderDeliveryReceipt:
+      type: object
+      required:
+        - notificationId
+        - deliveryStatus
+      properties:
+        notificationId:
+          type: integer
+          description: ID của thông báo trên hệ thống CAB
+        providerMessageId:
+          type: string
+          description: Mã tham chiếu bên hệ thống đối tác
+        deliveryStatus:
+          type: string
+          enum: [DELIVERED, FAILED]
+        errorReason:
+          type: string
+          description: Lý do lỗi nếu FAILED (Ví dụ "Invalid device token", "Phone offline")
+
+    InternalSendNotificationRequest:
+      type: object
+      required:
+        - recipientType
+        - recipientId
+        - notificationType
+        - payload
+      properties:
+        recipientType:
+          type: string
+          enum: [CUSTOMER, DRIVER]
+        recipientId:
+          type: integer
+          description: ID của Khách hàng hoặc Tài xế
+        notificationType:
+          type: string
+          example: "DRIVER_ACCEPTED"
+        payload:
+          type: object
+          description: Các
