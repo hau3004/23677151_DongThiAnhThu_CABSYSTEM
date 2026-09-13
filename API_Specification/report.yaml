@@ -1,0 +1,167 @@
+openapi: 3.0.3
+info:
+  title: CAB System API - Reports
+  description: |
+    API Specification cho phân hệ Báo cáo hoạt động.
+    Bám sát tài liệu SRS để cung cấp báo cáo cho Nhân viên vận hành (UC38, FR-38) 
+    và Ban lãnh đạo (UC39, FR-39).
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@cabsystem.vn
+
+servers:
+  - url: https://api.cabsystem.local/v1
+    description: Môi trường phát triển cục bộ
+
+tags:
+  - name: Operator Reports
+    description: Báo cáo hoạt động dành cho Nhân viên vận hành (UC38)
+  - name: Manager Reports
+    description: Báo cáo quản lý dành cho Ban lãnh đạo (UC39)
+
+paths:
+  /operator/reports/activities:
+    get:
+      tags:
+        - Operator Reports
+      summary: Báo cáo hoạt động (UC38)
+      description: |
+        Hệ thống cung cấp báo cáo về số chuyến, doanh thu, tỷ lệ hoàn thành, tỷ lệ hủy 
+        và hiệu quả hoạt động của Tài xế cho Nhân viên vận hành (FR-38, BR-11).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Dữ liệu báo cáo hoạt động vận hành
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportDataResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Không có quyền truy cập (Yêu cầu role OPERATOR)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /manager/reports/business:
+    get:
+      tags:
+        - Manager Reports
+      summary: Xem báo cáo quản lý (UC39)
+      description: |
+        Hệ thống cho phép Ban lãnh đạo xem các báo cáo phục vụ theo dõi và đánh giá hoạt động kinh doanh (FR-39, BR-12).
+        Nội dung hiển thị tương tự dữ liệu hoạt động nhưng phục vụ mục đích quản trị cấp cao.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Dữ liệu báo cáo kinh doanh cho Ban lãnh đạo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportDataResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Không có quyền truy cập (Yêu cầu role MANAGER)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Lỗi xác thực (Chưa đăng nhập hoặc Token hết hạn) (EC-17)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    ReportDataResponse:
+      type: object
+      description: Dữ liệu tổng hợp đúng theo yêu cầu "số chuyến, doanh thu, tỷ lệ hoàn thành, tỷ lệ hủy và hiệu quả hoạt động của Tài xế" (FR-38).
+      properties:
+        totalTrips:
+          type: integer
+          description: Tổng số chuyến xe
+        totalRevenue:
+          type: number
+          format: double
+          description: Doanh thu
+        completionRate:
+          type: number
+          format: float
+          description: Tỷ lệ hoàn thành (%)
+        cancellationRate:
+          type: number
+          format: float
+          description: Tỷ lệ hủy (%)
+        driverPerformances:
+          type: array
+          description: Hiệu quả hoạt động của Tài xế
+          items:
+            $ref: '#/components/schemas/DriverPerformance'
+
+    DriverPerformance:
+      type: object
+      properties:
+        driverId:
+          type: integer
+        fullName:
+          type: string
+        completedTrips:
+          type: integer
+          description: Số chuyến đã hoàn thành
+        cancelledTrips:
+          type: integer
+          description: Số chuyến bị hủy
+        averageRating:
+          type: number
+          format: float
+          description: Điểm đánh giá trung bình từ RATING (BR-11)
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
