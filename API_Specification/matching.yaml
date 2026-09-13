@@ -1,0 +1,188 @@
+openapi: 3.0.3
+info:
+  title: CAB System API - Matching & Dispatching
+  description: |
+    API Specification cho phân hệ Tìm và Phân công Tài xế (Matching).
+    Mô tả các API liên quan đến quá trình hệ thống phát yêu cầu cho Tài xế, Tài xế nhận thông báo và Khách hàng theo dõi tiến trình tìm kiếm.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@cabsystem.vn
+
+servers:
+  - url: https://api.cabsystem.local/v1
+    description: Môi trường phát triển cục bộ
+
+tags:
+  - name: Driver Matching
+    description: Các API liên quan đến việc nhận và kiểm tra yêu cầu chuyến xe phía Tài xế
+  - name: Customer Matching
+    description: Khách hàng theo dõi trạng thái tìm tài xế
+  - name: Internal / Operator
+    description: API nội bộ hoặc dành cho nhân viên vận hành xử lý luồng Matching
+
+paths:
+  /drivers/me/trip-requests/pending:
+    get:
+      tags:
+        - Driver Matching
+      summary: Lấy yêu cầu chuyến xe đang chờ phản hồi (UC12, UC13)
+      description: |
+        App Tài xế gọi API này (dùng để polling hoặc gọi ngay sau khi nhận Push Notification) để lấy chi tiết yêu cầu chuyến xe mà hệ thống đang phân công cho mình.
+        Chỉ trả về yêu cầu khi trạng thái tài xế là AVAILABLE (BRL-11).
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Có một yêu cầu chuyến xe đang chờ tài xế xác nhận
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingTripRequest'
+        '204':
+          description: Hiện tại không có yêu cầu chuyến xe nào được phân công
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /trips/{tripId}/matching-status:
+    get:
+      tags:
+        - Customer Matching
+      summary: Khách hàng kiểm tra trạng thái tìm tài xế (UC10, UC28)
+      description: |
+        Khách hàng polling API này để xem hệ thống có đang tìm được tài xế không.
+        Hỗ trợ hiển thị giao diện "Đang tìm...", "Đã tìm thấy", hoặc "Không tìm thấy tài xế" (EC-05, BR-17).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Trạng thái Matching hiện tại của chuyến đi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchingStatusResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Không tìm thấy chuyến đi
+
+  /internal/trips/{tripId}/dispatch/retry:
+    post:
+      tags:
+        - Internal / Operator
+      summary: Tiếp tục/Thử lại tìm tài xế (UC14)
+      description: |
+        API nội bộ (Internal) để Engine tự động gọi khi timeout (EC-07) hoặc Nhân viên vận hành kích hoạt lại (Retry) quá trình tìm kiếm tài xế cho chuyến xe đang bị kẹt ở trạng thái không tìm thấy (EC-05).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Đã kích hoạt lại luồng tìm kiếm tài xế
+        '400':
+          description: Chuyến xe không ở trạng thái hợp lệ để tìm lại (ví dụ đã CONFIRMED hoặc CANCELLED)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Không có quyền truy cập (Chưa đăng nhập hoặc token hết hạn)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Hành động bị từ chối (Sai vai trò người dùng)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    PendingTripRequest:
+      type: object
+      properties:
+        tripId:
+          type: integer
+        pickupLocation:
+          type: string
+        destination:
+          type: string
+        vehicleType:
+          type: string
+        estimatedFare:
+          type: number
+          format: double
+        customer:
+          type: object
+          properties:
+            fullName:
+              type: string
+            rating:
+              type: number
+              format: float
+              description: Điểm đánh giá trung bình của Khách hàng
+        expireAt:
+          type: string
+          format: date-time
+          description: Thời điểm hết hạn để tài xế phản hồi trước khi hệ thống tự động đánh dấu "Không phản hồi" và chuyển cho người khác (TBD-05, EC-07).
+
+    MatchingStatusResponse:
+      type: object
+      properties:
+        tripId:
+          type: integer
+        status:
+          type: string
+          enum: [SEARCHING, DRIVER_FOUND, NO_DRIVER_FOUND, TIMEOUT]
+          description: Trạng thái của tiến trình Matching
+        driverAssigned:
+          type: object
+          nullable: true
+          description: Trả về thông tin cơ bản nếu đã tìm thấy tài xế (FR-15, UC16)
+          properties:
+            driverId:
+              type: integer
+            fullName:
+              type: string
+            phone:
+              type: string
+            vehicleType:
+              type: string
+            licensePlate:
+              type: string
+        message:
+          type: string
+          description: Thông báo tương ứng (Ví dụ "Đang tìm tài xế gần bạn..." hoặc "Hiện không có tài xế phù hợp").
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
