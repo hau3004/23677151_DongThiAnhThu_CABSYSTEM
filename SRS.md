@@ -26,13 +26,14 @@ quadrantChart
     quadrant-3 "Theo dõi tối thiểu (Monitor)"
     quadrant-4 "Cung cấp thông tin (Keep Informed)"
 
-    "Ban lãnh đạo": [0.85, 0.90]
+    "Ban lãnh đạo Công ty ABC": [0.85, 0.90]
     "Nhân viên vận hành": [0.65, 0.55]
     "Khách hàng": [0.85, 0.35]
     "Tài xế": [0.75, 0.30]
-    "Đối tác thanh toán": [0.30, 0.65]
-    "Đối tác thông báo": [0.25, 0.55]
+    "Nhà cung cấp thanh toán": [0.30, 0.65]
+    "Nhà cung cấp dịch vụ thông báo": [0.25, 0.55]
 ```
+
 
 ## 3. BUSINESS GOALS (Mục tiêu Kinh doanh)
 
