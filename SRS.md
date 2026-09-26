@@ -52,50 +52,49 @@ quadrantChart
 
 | STT | Module | Mô tả |
 |---|---|---|
-| 1 | Quản lý tài khoản & hồ sơ | Đăng ký, đăng nhập, cập nhật thông tin cá nhân cho Khách hàng và Tài xế; Tài xế cập nhật hồ sơ phương tiện. |
-| 2 | Đặt xe & Theo dõi chuyến | Nhập điểm đón, điểm đến, chọn loại xe, gửi yêu cầu đặt xe; theo dõi trạng thái chuyến theo thời gian thực; xem lịch sử chuyến đi. |
-| 3 | Tìm & Phân công tài xế | Tự động tìm tài xế phù hợp theo vị trí và trạng thái sẵn sàng; xử lý khi tài xế không phản hồi/từ chối; thông báo khi không tìm được tài xế. |
-| 4 | Thực hiện chuyến đi | Tài xế cập nhật trạng thái chuyến: đã đến điểm đón, đã đón khách, đang di chuyển, hoàn thành chuyến. |
-| 5 | Tính cước & Thanh toán | Tính cước sau khi hoàn thành chuyến; thanh toán bằng tiền mặt hoặc tích hợp thanh toán điện tử bên ngoài; xử lý khi giao dịch thất bại. |
-| 6 | Thông báo | Gửi thông báo cho khách hàng và tài xế theo các sự kiện của chuyến đi. |
-| 7 | Đánh giá tài xế | Khách hàng đánh giá tài xế sau khi hoàn thành chuyến. |
-| 8 | Quản trị vận hành | Giao diện cho Nhân viên vận hành quản lý khách hàng, tài xế, phương tiện, chuyến đi và xem báo cáo. |
+| 1 | Quản lý tài khoản & hồ sơ |Đăng ký, đăng nhập, cập nhật thông tin cá nhân cho Khách hàng và Tài xế; Tài xế cập nhật thông tin phương tiện và trạng thái hoạt động. |
+| 2 | Đặt xe & Theo dõi chuyến | Nhập điểm đón, điểm đến, chọn loại xe, gửi yêu cầu đặt xe; theo dõi trạng thái chuyến; xem tài xế đã nhận chuyến, thời gian dự kiến đến và lịch sử chuyến đi.|
+| 3 | Tìm & Phân công tài xế | Tự động tìm tài xế phù hợp dựa trên vị trí, trạng thái sẵn sàng và các tiêu chí vận hành; nếu tài xế không phản hồi hoặc từ chối thì tiếp tục tìm tài xế khác; thông báo khi không tìm được tài xế. |
+| 4 | Thực hiện chuyến đi | Tài xế cập nhật trạng thái chuyến: đã đến điểm đón, đã đón khách, đang di chuyển và hoàn thành chuyến. |
+| 5 | Tính cước & Thanh toán | Tính số tiền phải trả sau khi hoàn thành chuyến; hỗ trợ thanh toán bằng tiền mặt hoặc thanh toán điện tử thông qua nhà cung cấp bên ngoài; thông báo và cho phép xử lý lại khi giao dịch điện tử thất bại theo chính sách. |
+| 6 | Thông báo |Gửi thông báo cho Khách hàng và Tài xế về các sự kiện của chuyến đi như nhận yêu cầu đặt xe, tài xế nhận chuyến, tài xế đến điểm đón, hoàn thành chuyến và kết quả thanh toán. |
+| 7 | Đánh giá tài xế | Khách hàng đánh giá Tài xế sau khi chuyến đi hoàn thành. |
+| 8 | Quản trị vận hành | Giao diện cho Nhân viên vận hành quản lý khách hàng, tài xế, phương tiện, chuyến đi; theo dõi chuyến đang diễn ra, trạng thái tài xế, xử lý các trường hợp lỗi, tra cứu lịch sử giao dịch và xem báo cáo.|
 ## 5. ACTORS
 
 | STT | Actor | Mô tả |
 |---|---|---|
-| 1 | Khách hàng (Customer) | Đăng ký/đăng nhập, cập nhật hồ sơ, tạo yêu cầu đặt xe, theo dõi chuyến, xem lịch sử, thanh toán và đánh giá tài xế. |
-| 2 | Tài xế (Driver) | Đăng ký/cập nhật hồ sơ và phương tiện, chuyển trạng thái sẵn sàng, nhận/từ chối chuyến, cập nhật trạng thái chuyến và vị trí. |
-| 3 | Nhân viên vận hành (Operator) | Quản lý khách hàng, tài xế, phương tiện, chuyến đi; xử lý sự cố; tra cứu lịch sử và xem báo cáo. |
-| 4 | Ban lãnh đạo (Manager) | Xem báo cáo doanh thu, số chuyến, tỷ lệ hoàn thành/hủy và hiệu quả tài xế. |
-
+| 1 | Khách hàng (Customer) |Đăng ký/đăng nhập, cập nhật hồ sơ, tạo yêu cầu đặt xe, theo dõi chuyến, xem lịch sử chuyến đi, thanh toán và đánh giá tài xế. |
+| 2 | Tài xế (Driver) | Đăng ký hoặc được Nhân viên vận hành tạo tài khoản; cập nhật hồ sơ và thông tin phương tiện, chuyển trạng thái sẵn sàng, nhận/từ chối chuyến, cập nhật trạng thái chuyến và vị trí.|
+| 3 | Nhân viên vận hành (Operator) |Quản lý khách hàng, tài xế, phương tiện, chuyến đi; theo dõi chuyến đang diễn ra, trạng thái tài xế, xử lý các trường hợp lỗi, tra cứu lịch sử giao dịch và xem báo cáo.|
+| 4 | Ban lãnh đạo (Manager) | Xem báo cáo về doanh thu, số chuyến, tỷ lệ hoàn thành, tỷ lệ hủy và hiệu quả hoạt động của tài xế.|
 | 5 | Nhà cung cấp thanh toán (Payment Gateway) | Xử lý giao dịch thanh toán điện tử và trả kết quả giao dịch về hệ thống CAB. |
-| 6 | Nhà cung cấp dịch vụ thông báo (Notification Provider) | Gửi thông báo đến khách hàng và tài xế theo yêu cầu của hệ thống. |
-## 7. BUSINESS REQUIREMENTS
+| 6 | Nhà cung cấp dịch vụ thông báo (Notification Provider) | Thực hiện gửi thông báo đến Khách hàng và Tài xế khi nhận yêu cầu từ hệ thống CAB. |
+## 6. BUSINESS REQUIREMENTS
 
 | ID | Business Requirement | Mô tả |
 |---|---|---|
 | BR-01 | Quản lý tài khoản khách hàng | Hệ thống phải cho phép Khách hàng đăng ký, đăng nhập và quản lý thông tin cá nhân để sử dụng dịch vụ đặt xe. |
 | BR-02 | Tạo yêu cầu đặt xe | Hệ thống phải cho phép Khách hàng tạo yêu cầu đặt xe bằng cách cung cấp điểm đón, điểm đến và loại xe. |
-| BR-03 | Tự động tìm và phân công tài xế | Hệ thống phải tự động tìm và phân công Tài xế phù hợp dựa trên vị trí và trạng thái sẵn sàng. |
+| BR-03 | Tự động tìm và phân công tài xế |Hệ thống phải tự động tìm Tài xế phù hợp dựa trên vị trí, trạng thái sẵn sàng và các tiêu chí vận hành. |
 | BR-04 | Xử lý từ chối hoặc không phản hồi | Hệ thống phải tiếp tục tìm Tài xế khác khi Tài xế được đề xuất không phản hồi hoặc từ chối chuyến. |
-| BR-05 | Theo dõi và cập nhật chuyến đi | Hệ thống phải cho phép Khách hàng và Tài xế theo dõi và cập nhật trạng thái chuyến đi trong suốt quá trình thực hiện. |
-| BR-06 | Tính cước và thanh toán | Hệ thống phải tính cước chuyến đi và hỗ trợ thanh toán bằng tiền mặt hoặc phương thức thanh toán điện tử. |
-| BR-07 | Tích hợp thanh toán điện tử | Hệ thống phải tích hợp với nhà cung cấp thanh toán để xử lý giao dịch và phản hồi kết quả thanh toán. |
-| BR-08 | Thông báo sự kiện chuyến đi | Hệ thống phải gửi thông báo đến Khách hàng và Tài xế khi xảy ra các sự kiện quan trọng của chuyến đi. |
+| BR-05 | Theo dõi và cập nhật chuyến đi |Hệ thống phải cho phép Khách hàng theo dõi trạng thái chuyến đi và cho phép Tài xế cập nhật trạng thái chuyến trong suốt quá trình thực hiện. |
+| BR-06 | Tính cước và thanh toán | Hệ thống phải tính số tiền phải trả sau khi chuyến đi hoàn thành và hỗ trợ thanh toán bằng tiền mặt hoặc phương thức thanh toán điện tử. |
+| BR-07 | Tích hợp thanh toán điện tử |Hệ thống phải tích hợp với nhà cung cấp thanh toán bên ngoài để xử lý giao dịch điện tử và nhận kết quả giao dịch. |
+| BR-08 | Thông báo sự kiện chuyến đi | Hệ thống phải gửi thông báo đến Khách hàng và Tài xế khi xảy ra các sự kiện của chuyến đi và hỗ trợ mở rộng thêm các kênh thông báo trong tương lai. |
 | BR-09 | Đánh giá tài xế | Hệ thống phải cho phép Khách hàng đánh giá Tài xế sau khi chuyến đi hoàn thành. |
-| BR-10 | Quản lý vận hành | Hệ thống phải cung cấp cho Nhân viên vận hành các chức năng quản lý khách hàng, tài xế, phương tiện và chuyến đi. |
-| BR-11 | Báo cáo hoạt động | Hệ thống phải cung cấp báo cáo về số chuyến, doanh thu, tỷ lệ hoàn thành, tỷ lệ hủy và hiệu quả hoạt động của Tài xế. |
+| BR-10 | Quản lý vận hành |Hệ thống phải cung cấp cho Nhân viên vận hành các chức năng quản lý khách hàng, tài xế, phương tiện và chuyến đi. |
+| BR-11 | Báo cáo hoạt động |Hệ thống phải cung cấp báo cáo về số chuyến, doanh thu, tỷ lệ hoàn thành, tỷ lệ hủy và hiệu quả hoạt động của Tài xế để Ban lãnh đạo theo dõi hoạt động kinh doanh.|
 | BR-12 | Báo cáo cho ban lãnh đạo | Hệ thống phải cho phép Ban lãnh đạo truy cập các báo cáo cần thiết để theo dõi và đánh giá hoạt động kinh doanh. |
-| BR-13 | Bảo vệ dữ liệu | Hệ thống phải bảo vệ thông tin cá nhân, dữ liệu vị trí và thông tin giao dịch của người dùng. |
+| BR-13 |Bảo vệ dữ liệu và kiểm soát truy cập |Hệ thống phải xác thực người dùng trước các chức năng yêu cầu tài khoản, kiểm soát quyền truy cập của Nhân viên vận hành, bảo vệ thông tin cá nhân, dữ liệu phương tiện, vị trí và giao dịch, đồng thời ghi nhận các hành động quan trọng để phục vụ kiểm tra và truy vết. |
 | BR-14 | Khả năng mở rộng | Hệ thống phải có khả năng mở rộng để đáp ứng số lượng lớn Khách hàng và Tài xế trong tương lai. |
-| BR-15 | Quản lý hồ sơ tài xế | Hệ thống phải cho phép Tài xế cập nhật thông tin cá nhân, thông tin phương tiện và trạng thái sẵn sàng nhận chuyến. |
-| BR-16 | Theo dõi và xử lý sự cố | Hệ thống phải cho phép Nhân viên vận hành theo dõi các chuyến đang diễn ra và xử lý các trường hợp phát sinh trong quá trình vận hành. |
-| BR-17 | Thông báo khi không tìm được tài xế | Hệ thống phải thông báo cho Khách hàng khi không tìm được Tài xế phù hợp cho yêu cầu đặt xe. |
-| BR-18 | Xử lý thanh toán thất bại | Hệ thống phải xử lý trường hợp giao dịch thanh toán điện tử thất bại và thông báo kết quả cho Khách hàng. |
-## 8. BUSINESS PROCESS MODELING
+| BR-15 | Quản lý hồ sơ tài xế |Hệ thống phải cho phép Tài xế đăng ký hoặc Nhân viên vận hành tạo tài khoản cho Tài xế; Tài xế có thể cập nhật thông tin cá nhân, thông tin phương tiện và trạng thái sẵn sàng nhận chuyến.|
+| BR-16 | Theo dõi và xử lý sự cố | Hệ thống phải cho phép Nhân viên vận hành theo dõi các chuyến đang diễn ra, trạng thái Tài xế và xử lý các trường hợp phát sinh trong quá trình vận hành.|
+| BR-17 | Thông báo khi không tìm được tài xế |Hệ thống phải thông báo cho Khách hàng khi không tìm được Tài xế phù hợp cho yêu cầu đặt xe. |
+| BR-18 | Xử lý thanh toán thất bại | Hệ thống phải thông báo cho Khách hàng khi giao dịch thanh toán điện tử thất bại và cho phép thử lại hoặc xử lý lại giao dịch theo chính sách nghiệp vụ. |
+| BR-19 | Tra cứu lịch sử giao dịch | Hệ thống phải cho phép Nhân viên vận hành tra cứu lịch sử giao dịch. |
+##7 . BUSINESS PROCESS MODELING
 
-Quy trình đặt xe của CAB System được xây dựng theo mô hình đặt xe trực tuyến thực tế. Khách hàng nhập thông tin hành trình, lựa chọn loại xe, hệ thống tính và hiển thị giá dự kiến, sau đó khách hàng lựa chọn phương thức thanh toán và xác nhận đặt xe. Hệ thống tiếp nhận yêu cầu, tìm và phân công Tài xế. Sau khi Tài xế chấp nhận, chuyến xe được thực hiện. Đối với thanh toán tiền mặt, Khách hàng thanh toán cho Tài xế sau khi hoàn thành chuyến. Đối với thanh toán điện tử, giao dịch được thực hiện ngay sau khi Khách hàng xác nhận đặt xe. Cuối cùng, Khách hàng có thể đánh giá Tài xế.
 
 ```mermaid
 flowchart TD
