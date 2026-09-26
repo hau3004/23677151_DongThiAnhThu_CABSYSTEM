@@ -21,17 +21,18 @@ quadrantChart
     x-axis "Mức độ quan tâm Thấp" --> "Mức độ quan tâm Cao"
     y-axis "Quyền lực / Ảnh hưởng Thấp" --> "Quyền lực / Ảnh hưởng Cao"
 
-    quadrant-1 "Quản lý chặt chẽ(Manage Closely)"
-    quadrant-2 "Thỏa mãn nhu cầu(Keep Satisfied)"
-    quadrant-3 "Theo dõi tối thiểu(Monitor)"
-    quadrant-4 "Cung cấp thông tin(Keep Informed)"
+    quadrant-1 "Quản lý chặt chẽ (Manage Closely)"
+    quadrant-2 "Thỏa mãn nhu cầu (Keep Satisfied)"
+    quadrant-3 "Theo dõi tối thiểu (Monitor)"
+    quadrant-4 "Cung cấp thông tin (Keep Informed)"
 
     "Ban lãnh đạo Công ty ABC": [0.85, 0.90]
     "Nhân viên vận hành": [0.65, 0.55]
-    "Khách hàng": [0.85, 0.35]
-    "Tài xế": [0.75, 0.30]
     "Nhà cung cấp thanh toán": [0.30, 0.65]
     "Nhà cung cấp dịch vụ thông báo": [0.25, 0.55]
+    "Khách hàng": [0.85, 0.35]
+    "Tài xế": [0.75, 0.30]
+
 ```
 
 
