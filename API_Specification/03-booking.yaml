@@ -1,11 +1,12 @@
+```yaml
 openapi: 3.0.3
 
 info:
   title: CAB System API - Booking & Tracking
   description: |
     API Specification cho phân hệ Đặt xe và Theo dõi chuyến của hệ thống CAB.
-    Cho phép Khách hàng tính giá dự kiến, tạo chuyến, theo dõi tài xế,
-    xem lịch sử chuyến đi và hủy chuyến.
+    Cho phép Khách hàng tính giá dự kiến, tạo yêu cầu đặt xe,
+    theo dõi chuyến đi, xem lịch sử chuyến đi và hủy chuyến.
   version: 1.0.0
   contact:
     name: API Support
@@ -17,13 +18,13 @@ servers:
 
 tags:
   - name: Booking
-    description: Các API liên quan đến quá trình tạo yêu cầu đặt xe
+    description: Các API liên quan đến quá trình đặt xe
 
   - name: Tracking & Execution
     description: Các API theo dõi trạng thái và vị trí chuyến đi
 
   - name: Trip History
-    description: Quản lý lịch sử chuyến đi
+    description: Các API liên quan đến lịch sử chuyến đi
 
 paths:
 
@@ -31,18 +32,23 @@ paths:
     post:
       tags:
         - Booking
-      summary: Tính giá dự kiến (UC07)
+      summary: Tính giá dự kiến
       description: |
-        Tính toán và trả về giá cước dự kiến dựa trên điểm đón,
-        điểm đến và loại xe (FR-06, BRL-06).
+        Tính toán và trả về giá cước dự kiến dựa trên
+        điểm đón, điểm đến và loại xe.
+
+        Chức năng thuộc UC03 - Quản lý chuyến đi.
+        Liên quan đến FR-06 và BRL-06.
       security:
         - bearerAuth: []
+
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/EstimateRequest'
+
       responses:
         '200':
           description: Tính giá thành công
@@ -50,36 +56,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EstimateResponse'
+
         '400':
           description: Thông tin yêu cầu không hợp lệ
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
         '401':
           $ref: '#/components/responses/Unauthorized'
+
 
   /trips:
     post:
       tags:
         - Booking
-      summary: Tạo yêu cầu đặt xe (UC09)
+      summary: Tạo yêu cầu đặt xe
       description: |
         Khách hàng xác nhận đặt xe.
 
-        Nếu thanh toán tiền mặt, chuyến được tạo và chuyển sang
-        trạng thái SEARCHING_DRIVER (BRL-08).
+        Hệ thống tạo yêu cầu chuyến và bắt đầu quá trình
+        tìm tài xế phù hợp.
 
-        Nếu thanh toán điện tử, hệ thống xử lý yêu cầu thanh toán
-        trước khi tạo booking request (BRL-09).
+        Phương thức thanh toán được khách hàng lựa chọn
+        trước khi đặt xe. Việc thanh toán thực tế được
+        thực hiện sau khi chuyến hoàn thành.
+
+        Chức năng thuộc UC03 - Quản lý chuyến đi.
+        Liên quan đến FR-05, FR-07, FR-08 và BRL-08.
       security:
         - bearerAuth: []
+
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/BookingRequest'
+
       responses:
         '201':
           description: Tạo yêu cầu đặt xe thành công
@@ -87,38 +102,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TripResponse'
+
         '400':
-          description: Thông tin đặt xe không hợp lệ (EC-01)
+          description: Thông tin đặt xe không hợp lệ
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
         '401':
           $ref: '#/components/responses/Unauthorized'
+
 
     get:
       tags:
         - Trip History
-      summary: Xem lịch sử chuyến đi (UC11)
+      summary: Xem lịch sử chuyến đi
       description: |
-        Lấy danh sách các chuyến đi của khách hàng hiện tại (FR-10).
+        Lấy danh sách các chuyến đi của khách hàng hiện tại.
+
+        Chức năng thuộc UC03 - Quản lý chuyến đi.
+        Liên quan đến FR-10.
       security:
         - bearerAuth: []
+
       parameters:
         - name: status
           in: query
           required: false
           description: Lọc theo trạng thái chuyến
           schema:
-            type: string
-            enum:
-              - PENDING
-              - SEARCHING_DRIVER
-              - DRIVER_ASSIGNED
-              - CONFIRMED
-              - IN_PROGRESS
-              - COMPLETED
-              - CANCELLED
+            $ref: '#/components/schemas/TripStatus'
 
         - name: page
           in: query
@@ -144,19 +158,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TripListResponse'
+
         '401':
           $ref: '#/components/responses/Unauthorized'
+
 
   /trips/{tripId}:
     get:
       tags:
         - Tracking & Execution
-      summary: Xem chi tiết và trạng thái chuyến đi (UC10)
+      summary: Xem chi tiết và trạng thái chuyến đi
       description: |
-        Lấy chi tiết chuyến đi, trạng thái hiện tại và thông tin
-        tài xế/phương tiện nếu đã được phân công.
+        Lấy thông tin chi tiết chuyến đi, trạng thái hiện tại
+        và thông tin tài xế/phương tiện nếu đã được phân công.
+
+        Chức năng thuộc UC03 - Quản lý chuyến đi.
+        Liên quan trực tiếp đến FR-09.
+
+        Trạng thái chuyến được cập nhật theo FR-16.
       security:
         - bearerAuth: []
+
       parameters:
         - name: tripId
           in: path
@@ -185,15 +207,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+
   /trips/{tripId}/driver-location:
     get:
       tags:
         - Tracking & Execution
-      summary: Theo dõi vị trí tài xế (UC10)
+      summary: Lấy vị trí tài xế
       description: |
-        Lấy tọa độ GPS mới nhất của tài xế để hiển thị trên bản đồ (NFR-04).
+        Lấy tọa độ GPS mới nhất của tài xế để khách hàng
+        theo dõi vị trí trong quá trình thực hiện chuyến.
+
+        API này cung cấp dữ liệu vị trí đã được hệ thống
+        cập nhật theo FR-17.
       security:
         - bearerAuth: []
+
       parameters:
         - name: tripId
           in: path
@@ -222,16 +250,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+
   /trips/{tripId}/cancel:
     post:
       tags:
         - Tracking & Execution
-      summary: Hủy chuyến đi (UC19)
+      summary: Hủy chuyến đi
       description: |
         Khách hàng yêu cầu hủy chuyến.
-        Trạng thái chuyến sẽ chuyển sang CANCELLED (BRL-15, EC-08).
+
+        Hệ thống kiểm tra điều kiện hủy và cập nhật
+        trạng thái chuyến theo chính sách của công ty.
+
+        Chức năng thuộc UC03 - Quản lý chuyến đi.
+        Liên quan đến FR-18 và BRL-13.
       security:
         - bearerAuth: []
+
       parameters:
         - name: tripId
           in: path
@@ -274,13 +309,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+
 components:
 
   securitySchemes:
+
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
 
   responses:
 
@@ -292,6 +330,7 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
+
 
   schemas:
 
@@ -320,6 +359,7 @@ components:
             - CAR_7_SEATS
             - MOTORBIKE
 
+
     EstimateResponse:
       type: object
       properties:
@@ -334,6 +374,7 @@ components:
           format: double
           description: Khoảng cách dự kiến tính bằng km
           example: 7.5
+
 
     BookingRequest:
       type: object
@@ -363,11 +404,14 @@ components:
 
         paymentMethod:
           type: string
-          description: Phương thức thanh toán
+          description: |
+            Phương thức thanh toán được khách hàng lựa chọn
+            trước khi đặt xe. Việc thanh toán thực tế được
+            thực hiện sau khi chuyến hoàn thành.
           enum:
             - CASH
-            - E_WALLET
-            - CREDIT_CARD
+            - ELECTRONIC
+
 
     CancelRequest:
       type: object
@@ -376,6 +420,22 @@ components:
           type: string
           description: Lý do hủy chuyến
           example: "Thay đổi kế hoạch"
+
+
+    TripStatus:
+      type: string
+      description: Trạng thái của chuyến đi
+      enum:
+        - PENDING
+        - SEARCHING_DRIVER
+        - DRIVER_ASSIGNED
+        - CONFIRMED
+        - ARRIVED
+        - PICKED_UP
+        - IN_PROGRESS
+        - COMPLETED
+        - CANCELLED
+
 
     TripResponse:
       type: object
@@ -408,38 +468,19 @@ components:
         estimatedFare:
           type: number
           format: double
+          description: Giá cước dự kiến
           example: 125000
 
+        paymentMethod:
+          type: string
+          description: Phương thức thanh toán đã được lựa chọn
+          enum:
+            - CASH
+            - ELECTRONIC
+
         tripStatus:
-          type: string
-          enum:
-            - PENDING
-            - SEARCHING_DRIVER
-            - DRIVER_ASSIGNED
-            - CONFIRMED
-            - IN_PROGRESS
-            - COMPLETED
-            - CANCELLED
+          $ref: '#/components/schemas/TripStatus'
 
-        payment:
-          $ref: '#/components/schemas/PaymentInfo'
-
-    PaymentInfo:
-      type: object
-      properties:
-        paymentStatus:
-          type: string
-          enum:
-            - PENDING
-            - PAID
-            - FAILED
-            - UNPAID
-
-        paymentUrl:
-          type: string
-          format: uri
-          description: URL thanh toán nếu chọn thanh toán điện tử
-          example: "https://payment.example.com/pay/abc123"
 
     TripDetailResponse:
       allOf:
@@ -450,10 +491,13 @@ components:
             actualFare:
               type: number
               format: double
-              description: Giá cước thực tế sau khi hoàn thành chuyến
+              description: Giá cước thực tế sau khi chuyến hoàn thành
 
             driver:
               $ref: '#/components/schemas/DriverInfo'
+
+            vehicle:
+              $ref: '#/components/schemas/VehicleInfo'
 
             startTime:
               type: string
@@ -464,6 +508,65 @@ components:
               type: string
               format: date-time
               description: Thời điểm kết thúc chuyến
+
+
+    TripHistoryItem:
+      type: object
+      properties:
+        tripId:
+          type: integer
+          format: int64
+          example: 10001
+
+        pickupLocation:
+          type: string
+          example: "123 Lê Lợi, Q.1, TP.HCM"
+
+        destination:
+          type: string
+          example: "Sân bay Tân Sơn Nhất"
+
+        vehicleType:
+          type: string
+          enum:
+            - CAR_4_SEATS
+            - CAR_7_SEATS
+            - MOTORBIKE
+
+        estimatedFare:
+          type: number
+          format: double
+          example: 125000
+
+        actualFare:
+          type: number
+          format: double
+          description: Cước thực tế nếu chuyến đã hoàn thành
+
+        tripStatus:
+          $ref: '#/components/schemas/TripStatus'
+
+        startTime:
+          type: string
+          format: date-time
+
+        endTime:
+          type: string
+          format: date-time
+
+
+    TripListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripHistoryItem'
+
+        total:
+          type: integer
+          description: Tổng số chuyến
+
 
     DriverInfo:
       type: object
@@ -478,20 +581,24 @@ components:
         phone:
           type: string
 
+
+    VehicleInfo:
+      type: object
+      properties:
+        vehicleId:
+          type: integer
+          format: int64
+
+        vehicleType:
+          type: string
+          enum:
+            - CAR_4_SEATS
+            - CAR_7_SEATS
+            - MOTORBIKE
+
         licensePlate:
           type: string
 
-    TripListResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/TripDetailResponse'
-
-        total:
-          type: integer
-          description: Tổng số chuyến
 
     LocationResponse:
       type: object
@@ -516,6 +623,7 @@ components:
           format: date-time
           description: Thời điểm cập nhật vị trí gần nhất
 
+
     ErrorResponse:
       type: object
       required:
@@ -529,3 +637,5 @@ components:
         message:
           type: string
           example: Thông tin yêu cầu không hợp lệ
+```
+
