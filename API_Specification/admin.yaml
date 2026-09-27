@@ -1,10 +1,14 @@
+```yaml
 openapi: 3.0.3
+
 info:
   title: CAB System API - Admin & Operations
   description: |
     API Specification cho phân hệ Quản trị Vận hành của hệ thống CAB.
-    Cung cấp các endpoints cho Nhân viên vận hành (OPERATOR) và Ban lãnh đạo (MANAGER) 
-    để quản lý Khách hàng, Tài xế, Phương tiện, giám sát Chuyến đi, xử lý sự cố và xem Báo cáo thống kê.
+    Cung cấp các endpoints cho Nhân viên vận hành (OPERATOR)
+    và Ban lãnh đạo (MANAGER) để quản lý Khách hàng, Tài xế,
+    Phương tiện, giám sát Chuyến đi, xử lý sự cố, xem Báo cáo
+    hoạt động và tra cứu lịch sử giao dịch.
   version: 1.0.0
   contact:
     name: API Support
@@ -16,43 +20,73 @@ servers:
 
 tags:
   - name: Customer Management
-    description: Tra cứu và quản lý trạng thái Khách hàng (FR-33)
+    description: Tra cứu và quản lý Khách hàng (FR-33)
+
   - name: Driver & Vehicle Management
-    description: Tra cứu và quản lý hồ sơ Tài xế cùng Phương tiện (FR-34, FR-35)
+    description: Tra cứu và quản lý Tài xế, Phương tiện (FR-34, FR-35)
+
   - name: Trip Operations
-    description: Theo dõi chuyến đi và xử lý sự cố khẩn cấp (FR-36, FR-37)
+    description: Theo dõi Chuyến đi và xử lý sự cố (FR-36, FR-37)
+
   - name: Reports & Analytics
-    description: Báo cáo doanh thu, số chuyến, tỷ lệ hoàn thành và hiệu quả hoạt động (FR-38, FR-39)
+    description: Báo cáo hoạt động (FR-38, FR-39)
+
+  - name: Transaction History
+    description: Tra cứu lịch sử giao dịch (FR-40)
+
 
 paths:
+
+  # =========================================================
+  # UC11 - QUẢN LÝ KHÁCH HÀNG
+  # =========================================================
+
   /admin/customers:
     get:
       tags:
         - Customer Management
-      summary: Lấy danh sách Khách hàng (UC33)
+      summary: Tra cứu và quản lý Khách hàng (UC11)
+      description: |
+        Operator tra cứu và quản lý thông tin Khách hàng
+        theo quyền được phân công.
+
+        Chức năng thuộc UC11 - Quản lý khách hàng.
+        Liên quan đến FR-33 và BR-10.
       security:
         - bearerAuth: []
+
       parameters:
         - name: search
           in: query
-          description: Tìm kiếm theo tên, số điện thoại hoặc email
+          required: false
+          description: Tìm kiếm theo thông tin khách hàng
           schema:
             type: string
+
         - name: status
           in: query
+          required: false
+          description: Lọc theo trạng thái tài khoản nếu hệ thống hỗ trợ
           schema:
             type: string
-            enum: [ACTIVE, INACTIVE, BLOCKED]
+
         - name: page
           in: query
+          required: false
           schema:
             type: integer
+            minimum: 1
             default: 1
+
         - name: limit
           in: query
+          required: false
           schema:
             type: integer
+            minimum: 1
+            maximum: 100
             default: 20
+
       responses:
         '200':
           description: Danh sách khách hàng
@@ -60,78 +94,125 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomerListResponse'
+
         '401':
           $ref: '#/components/responses/Unauthorized'
+
         '403':
           $ref: '#/components/responses/Forbidden'
+
 
   /admin/customers/{customerId}/status:
     patch:
       tags:
         - Customer Management
-      summary: Khóa/Mở khóa tài khoản Khách hàng
+      summary: Cập nhật trạng thái Khách hàng (UC11)
+      description: |
+        Operator cập nhật trạng thái tài khoản Khách hàng
+        theo quyền được phân công.
+
+        Trạng thái cụ thể do hệ thống/policy quy định,
+        không được SRS 1-16 chốt thành một bộ giá trị cố định.
+
+        Chức năng thuộc UC11 - Quản lý khách hàng.
+        Liên quan đến FR-33 và BR-10.
       security:
         - bearerAuth: []
+
       parameters:
         - name: customerId
           in: path
           required: true
           schema:
             type: integer
+            format: int64
+            minimum: 1
+
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [status]
-              properties:
-                status:
-                  type: string
-                  enum: [ACTIVE, BLOCKED]
-                reason:
-                  type: string
+              $ref: '#/components/schemas/StatusUpdateRequest'
+
       responses:
         '200':
-          description: Cập nhật thành công
+          description: Cập nhật trạng thái thành công
+
         '401':
           $ref: '#/components/responses/Unauthorized'
+
         '403':
           $ref: '#/components/responses/Forbidden'
+
+        '404':
+          description: Không tìm thấy khách hàng
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  # =========================================================
+  # UC12 - QUẢN LÝ TÀI XẾ
+  # UC07 - QUẢN LÝ VẬN HÀNH / PHƯƠNG TIỆN
+  # =========================================================
 
   /admin/drivers:
     get:
       tags:
         - Driver & Vehicle Management
-      summary: Lấy danh sách Tài xế (UC34, UC35)
-      description: Lấy danh sách Tài xế kèm theo thông tin Phương tiện hiện tại.
+      summary: Tra cứu và quản lý Tài xế (UC12)
+      description: |
+        Operator tra cứu và quản lý thông tin Tài xế
+        theo quyền được phân công.
+
+        Thông tin Phương tiện hiện tại của Tài xế có thể
+        được trả về cùng dữ liệu để phục vụ quản lý vận hành.
+
+        Chức năng thuộc UC12 - Quản lý tài xế.
+        Liên quan đến FR-34 và BR-10.
       security:
         - bearerAuth: []
+
       parameters:
         - name: search
           in: query
+          required: false
           schema:
             type: string
+
         - name: status
           in: query
+          required: false
+          description: Lọc theo trạng thái tài xế nếu hệ thống hỗ trợ
           schema:
             type: string
-            enum: [PENDING, ACTIVE, BLOCKED]
+
         - name: readyStatus
           in: query
+          required: false
+          description: Lọc theo trạng thái sẵn sàng của tài xế
           schema:
             type: string
-            enum: [AVAILABLE, UNAVAILABLE]
+
         - name: page
           in: query
+          required: false
           schema:
             type: integer
+            minimum: 1
             default: 1
+
         - name: limit
           in: query
+          required: false
           schema:
             type: integer
+            minimum: 1
+            maximum: 100
             default: 20
+
       responses:
         '200':
           description: Danh sách tài xế
@@ -139,136 +220,292 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DriverListResponse'
+
         '401':
           $ref: '#/components/responses/Unauthorized'
+
         '403':
           $ref: '#/components/responses/Forbidden'
+
 
   /admin/drivers/{driverId}/status:
     patch:
       tags:
         - Driver & Vehicle Management
-      summary: Phê duyệt, Khóa/Mở khóa Tài xế
+      summary: Cập nhật trạng thái Tài xế (UC12)
+      description: |
+        Operator cập nhật trạng thái tài khoản Tài xế
+        theo quyền được phân công.
+
+        Trạng thái cụ thể do hệ thống/policy quy định,
+        không được SRS 1-16 chốt thành một bộ giá trị cố định.
+
+        Chức năng thuộc UC12 - Quản lý tài xế.
+        Liên quan đến FR-34 và BR-10.
       security:
         - bearerAuth: []
+
       parameters:
         - name: driverId
           in: path
           required: true
           schema:
             type: integer
+            format: int64
+            minimum: 1
+
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [status]
-              properties:
-                status:
-                  type: string
-                  enum: [ACTIVE, BLOCKED]
-                reason:
-                  type: string
+              $ref: '#/components/schemas/StatusUpdateRequest'
+
       responses:
         '200':
-          description: Cập nhật thành công
+          description: Cập nhật trạng thái thành công
+
         '401':
           $ref: '#/components/responses/Unauthorized'
+
         '403':
           $ref: '#/components/responses/Forbidden'
+
+        '404':
+          description: Không tìm thấy tài xế
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  # =========================================================
+  # UC07 - QUẢN LÝ VẬN HÀNH / PHƯƠNG TIỆN
+  # =========================================================
+
+  /admin/vehicles:
+    get:
+      tags:
+        - Driver & Vehicle Management
+      summary: Tra cứu Phương tiện (UC07)
+      description: |
+        Operator tra cứu và quản lý thông tin Phương tiện
+        như một phần của hoạt động Quản lý vận hành.
+
+        Chức năng thuộc UC07 - Quản lý vận hành.
+        Liên quan đến FR-35 và BR-10.
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: driverId
+          in: query
+          required: false
+          description: Lọc phương tiện theo tài xế
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+
+        - name: vehicleType
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - CAR_4_SEATS
+              - CAR_7_SEATS
+              - MOTORBIKE
+
+        - name: status
+          in: query
+          required: false
+          description: Lọc theo trạng thái phương tiện nếu hệ thống hỗ trợ
+          schema:
+            type: string
+
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+
+      responses:
+        '200':
+          description: Danh sách phương tiện
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleListResponse'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+
+  # =========================================================
+  # UC07 - QUẢN LÝ VẬN HÀNH / THEO DÕI CHUYẾN
+  # =========================================================
 
   /admin/trips:
     get:
       tags:
         - Trip Operations
-      summary: Giám sát toàn bộ chuyến đi (UC36)
-      description: Vận hành viên sử dụng API này để tra cứu và theo dõi các chuyến đi (đặc biệt là các chuyến IN_PROGRESS để giám sát an toàn).
+      summary: Giám sát chuyến đi (UC07)
+      description: |
+        Operator tra cứu và theo dõi các chuyến đi
+        trong quá trình vận hành.
+
+        Chức năng thuộc UC07 - Quản lý vận hành.
+        Liên quan đến FR-36 và BR-10.
+
+        Trạng thái chuyến sử dụng cùng bộ trạng thái
+        với phân hệ Booking & Tracking.
       security:
         - bearerAuth: []
+
       parameters:
         - name: tripStatus
           in: query
+          required: false
           schema:
-            type: string
-            enum: [PENDING, SEARCHING_DRIVER, DRIVER_ASSIGNED, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED]
+            $ref: '#/components/schemas/TripStatus'
+
         - name: startDate
           in: query
+          required: false
           schema:
             type: string
             format: date
+
         - name: endDate
           in: query
+          required: false
           schema:
             type: string
             format: date
+
         - name: page
           in: query
+          required: false
           schema:
             type: integer
+            minimum: 1
             default: 1
+
         - name: limit
           in: query
+          required: false
           schema:
             type: integer
+            minimum: 1
+            maximum: 100
             default: 20
+
       responses:
         '200':
-          description: Danh sách các chuyến xe
+          description: Danh sách chuyến đi
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TripAdminListResponse'
+
         '401':
           $ref: '#/components/responses/Unauthorized'
+
         '403':
           $ref: '#/components/responses/Forbidden'
 
-  /admin/trips/{tripId}/cancel:
+
+  # =========================================================
+  # UC08 - XỬ LÝ SỰ CỐ
+  # =========================================================
+
+  /admin/trips/{tripId}/incidents:
     post:
       tags:
         - Trip Operations
-      summary: Hủy chuyến đi khẩn cấp (UC37)
+      summary: Xử lý sự cố chuyến đi (UC08)
       description: |
-        Sử dụng trong tình huống sự cố (EC-09: Tài xế mất kết nối, xe hỏng giữa đường...).
-        Nhân viên vận hành có quyền can thiệp hủy chuyến đi đang diễn ra và ghi nhận lý do.
+        Operator ghi nhận và xử lý sự cố liên quan đến
+        chuyến đi theo quy trình vận hành.
+
+        SRS không quy định cố định loại sự cố hoặc thao tác
+        xử lý cụ thể trong API này.
+
+        Chức năng thuộc UC08 - Xử lý sự cố.
+        Liên quan đến FR-37 và BR-16.
       security:
         - bearerAuth: []
+
       parameters:
         - name: tripId
           in: path
           required: true
           schema:
             type: integer
+            format: int64
+            minimum: 1
+
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              required: [reason]
-              properties:
-                reason:
-                  type: string
-                  description: Lý do hủy chuyến từ phía vận hành
+              $ref: '#/components/schemas/IncidentRequest'
+
       responses:
         '200':
-          description: Hủy chuyến thành công
+          description: Xử lý sự cố thành công
+
         '401':
           $ref: '#/components/responses/Unauthorized'
+
         '403':
           $ref: '#/components/responses/Forbidden'
+
+        '404':
+          description: Không tìm thấy chuyến đi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  # =========================================================
+  # UC09 - QUẢN LÝ BÁO CÁO HOẠT ĐỘNG
+  # =========================================================
 
   /admin/reports/overview:
     get:
       tags:
         - Reports & Analytics
-      summary: Báo cáo tổng quan hoạt động (UC38, UC39)
+      summary: Xem báo cáo hoạt động (UC09)
       description: |
-        Ban lãnh đạo và Nhân viên vận hành xem các chỉ số cốt lõi: 
-        Số chuyến, doanh thu, tỷ lệ hoàn thành/hủy (BR-11, BR-12).
+        Ban lãnh đạo xem các báo cáo hoạt động của hệ thống,
+        bao gồm số chuyến, doanh thu, tỷ lệ hoàn thành,
+        tỷ lệ hủy và hiệu quả tài xế.
+
+        Chức năng thuộc UC09 - Quản lý báo cáo hoạt động.
+        Liên quan đến FR-38, FR-39, BR-11 và BR-12.
+
+        Actor của UC09 là Manager.
       security:
         - bearerAuth: []
+
       parameters:
         - name: startDate
           in: query
@@ -276,45 +513,496 @@ paths:
           schema:
             type: string
             format: date
+
         - name: endDate
           in: query
           required: true
           schema:
             type: string
             format: date
+
       responses:
         '200':
-          description: Dữ liệu báo cáo tổng quan
+          description: Dữ liệu báo cáo hoạt động
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/OverviewReportResponse'
+
         '401':
           $ref: '#/components/responses/Unauthorized'
+
         '403':
           $ref: '#/components/responses/Forbidden'
 
+
+  # =========================================================
+  # UC10 - TRA CỨU LỊCH SỬ GIAO DỊCH
+  # =========================================================
+
+  /admin/transactions:
+    get:
+      tags:
+        - Transaction History
+      summary: Tra cứu lịch sử giao dịch (UC10)
+      description: |
+        Operator tra cứu lịch sử giao dịch của các chuyến đi.
+
+        Chức năng thuộc UC10 - Tra cứu lịch sử giao dịch.
+        Liên quan đến FR-40 và BR-12.
+
+        Actor của UC10 là Operator.
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: tripId
+          in: query
+          required: false
+          description: Lọc theo mã chuyến đi
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+
+        - name: paymentStatus
+          in: query
+          required: false
+          description: Lọc theo trạng thái thanh toán nếu hệ thống hỗ trợ
+          schema:
+            type: string
+
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+
+      responses:
+        '200':
+          description: Lịch sử giao dịch
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionListResponse'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+
 components:
+
+  # =========================================================
+  # SECURITY
+  # =========================================================
+
   securitySchemes:
+
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: JWT Token (Yêu cầu Role là OPERATOR hoặc MANAGER).
+      description: JWT Token. Quyền truy cập được kiểm soát theo vai trò và quyền được phân công.
+
+  # =========================================================
+  # COMMON RESPONSES
+  # =========================================================
 
   responses:
+
     Unauthorized:
-      description: Không có quyền truy cập (Chưa đăng nhập)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Forbidden:
-      description: Hành động bị từ chối (Chỉ OPERATOR / MANAGER mới được gọi API này) (BRL-03)
+      description: |
+        Không có quyền truy cập.
+        Người dùng chưa đăng nhập hoặc token đã hết hạn.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
 
+    Forbidden:
+      description: |
+        Người dùng đã đăng nhập nhưng không có quyền
+        thực hiện chức năng theo vai trò hoặc quyền được phân công.
+        Liên quan đến BRL-03.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+
+  # =========================================================
+  # SCHEMAS
+  # =========================================================
+
   schemas:
-    Cust
+
+    # ---------------------------------------------------------
+    # COMMON STATUS UPDATE
+    # ---------------------------------------------------------
+
+    StatusUpdateRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          description: Trạng thái mới theo cấu hình/policy của hệ thống
+
+        reason:
+          type: string
+          description: Lý do cập nhật trạng thái
+
+
+    # ---------------------------------------------------------
+    # CUSTOMER
+    # ---------------------------------------------------------
+
+    CustomerListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerAdminItem'
+
+        total:
+          type: integer
+          description: Tổng số khách hàng
+
+    CustomerAdminItem:
+      type: object
+      properties:
+        customerId:
+          type: integer
+          format: int64
+
+        fullName:
+          type: string
+
+        phone:
+          type: string
+
+        email:
+          type: string
+
+        status:
+          type: string
+          description: Trạng thái tài khoản
+
+
+    # ---------------------------------------------------------
+    # DRIVER
+    # ---------------------------------------------------------
+
+    DriverListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/DriverAdminItem'
+
+        total:
+          type: integer
+          description: Tổng số tài xế
+
+    DriverAdminItem:
+      type: object
+      properties:
+        driverId:
+          type: integer
+          format: int64
+
+        fullName:
+          type: string
+
+        phone:
+          type: string
+
+        email:
+          type: string
+
+        status:
+          type: string
+          description: Trạng thái tài xế
+
+        readyStatus:
+          type: string
+          description: Trạng thái sẵn sàng của tài xế
+
+        vehicle:
+          $ref: '#/components/schemas/VehicleAdminItem'
+
+
+    # ---------------------------------------------------------
+    # VEHICLE
+    # ---------------------------------------------------------
+
+    VehicleListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleAdminItem'
+
+        total:
+          type: integer
+          description: Tổng số phương tiện
+
+    VehicleAdminItem:
+      type: object
+      properties:
+        vehicleId:
+          type: integer
+          format: int64
+
+        driverId:
+          type: integer
+          format: int64
+
+        vehicleType:
+          type: string
+          enum:
+            - CAR_4_SEATS
+            - CAR_7_SEATS
+            - MOTORBIKE
+
+        licensePlate:
+          type: string
+
+        status:
+          type: string
+          description: Trạng thái phương tiện
+
+
+    # ---------------------------------------------------------
+    # TRIP
+    # ---------------------------------------------------------
+
+    TripStatus:
+      type: string
+      description: |
+        Trạng thái chuyến đi được đồng bộ với phân hệ
+        Booking & Tracking.
+      enum:
+        - PENDING
+        - SEARCHING_DRIVER
+        - DRIVER_ASSIGNED
+        - CONFIRMED
+        - ARRIVED
+        - PICKED_UP
+        - IN_PROGRESS
+        - COMPLETED
+        - CANCELLED
+
+    TripAdminListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TripAdminItem'
+
+        total:
+          type: integer
+          description: Tổng số chuyến đi
+
+    TripAdminItem:
+      type: object
+      properties:
+        tripId:
+          type: integer
+          format: int64
+
+        customerId:
+          type: integer
+          format: int64
+
+        driverId:
+          type: integer
+          format: int64
+
+        vehicleId:
+          type: integer
+          format: int64
+
+        pickupLocation:
+          type: string
+
+        destination:
+          type: string
+
+        vehicleType:
+          type: string
+          enum:
+            - CAR_4_SEATS
+            - CAR_7_SEATS
+            - MOTORBIKE
+
+        tripStatus:
+          $ref: '#/components/schemas/TripStatus'
+
+        estimatedFare:
+          type: number
+          format: double
+
+        actualFare:
+          type: number
+          format: double
+
+        startTime:
+          type: string
+          format: date-time
+
+        endTime:
+          type: string
+          format: date-time
+
+
+    # ---------------------------------------------------------
+    # INCIDENT
+    # ---------------------------------------------------------
+
+    IncidentRequest:
+      type: object
+      required:
+        - description
+      properties:
+        description:
+          type: string
+          description: Mô tả sự cố
+
+        action:
+          type: string
+          description: Thao tác xử lý theo quy trình vận hành
+
+
+    # ---------------------------------------------------------
+    # REPORT
+    # ---------------------------------------------------------
+
+    OverviewReportResponse:
+      type: object
+      properties:
+        totalTrips:
+          type: integer
+          description: Tổng số chuyến
+
+        totalRevenue:
+          type: number
+          format: double
+          description: Tổng doanh thu
+
+        completionRate:
+          type: number
+          format: double
+          description: Tỷ lệ hoàn thành
+
+        cancellationRate:
+          type: number
+          format: double
+          description: Tỷ lệ hủy
+
+        driverEfficiency:
+          type: number
+          format: double
+          description: Hiệu quả tài xế
+
+
+    # ---------------------------------------------------------
+    # TRANSACTION
+    # ---------------------------------------------------------
+
+    TransactionListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionHistoryItem'
+
+        total:
+          type: integer
+          description: Tổng số giao dịch
+
+    TransactionHistoryItem:
+      type: object
+      properties:
+        transactionId:
+          type: integer
+          format: int64
+
+        tripId:
+          type: integer
+          format: int64
+
+        paymentMethod:
+          type: string
+          enum:
+            - CASH
+            - ELECTRONIC
+
+        amount:
+          type: number
+          format: double
+
+        paymentStatus:
+          type: string
+          description: Trạng thái thanh toán theo hệ thống
+
+        transactionCode:
+          type: string
+
+        paidAt:
+          type: string
+          format: date-time
+
+
+    # ---------------------------------------------------------
+    # ERROR
+    # ---------------------------------------------------------
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: FORBIDDEN
+
+        message:
+          type: string
+          example: Người dùng không có quyền thực hiện thao tác này
+```
