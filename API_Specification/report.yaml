@@ -1,167 +1,281 @@
+```yaml
 openapi: 3.0.3
+
 info:
   title: CAB System API - Reports
   description: |
-    API Specification cho phân hệ Báo cáo hoạt động.
-    Bám sát tài liệu SRS để cung cấp báo cáo cho Nhân viên vận hành (UC38, FR-38) 
-    và Ban lãnh đạo (UC39, FR-39).
+    API Specification cho phân hệ Báo cáo hoạt động của hệ thống CAB.
+
+    Bao gồm:
+    - API cung cấp báo cáo hoạt động cho Ban lãnh đạo
+    - API cung cấp báo cáo phục vụ theo dõi và đánh giá hoạt động kinh doanh
+
+    Thuộc UC09 - Quản lý báo cáo hoạt động.
+
+    Liên quan đến FR-38, FR-39,
+    BR-11 và BR-12.
   version: 1.0.0
+
   contact:
     name: API Support
     email: support@cabsystem.vn
+
 
 servers:
   - url: https://api.cabsystem.local/v1
     description: Môi trường phát triển cục bộ
 
+
 tags:
-  - name: Operator Reports
-    description: Báo cáo hoạt động dành cho Nhân viên vận hành (UC38)
   - name: Manager Reports
-    description: Báo cáo quản lý dành cho Ban lãnh đạo (UC39)
+    description: Báo cáo hoạt động dành cho Ban lãnh đạo
+
 
 paths:
-  /operator/reports/activities:
+
+  # =========================================================
+  # UC09 - QUẢN LÝ BÁO CÁO HOẠT ĐỘNG
+  # =========================================================
+
+  /manager/reports/activities:
     get:
       tags:
-        - Operator Reports
-      summary: Báo cáo hoạt động (UC38)
+        - Manager Reports
+
+      summary: Xem báo cáo hoạt động (UC09)
+
       description: |
-        Hệ thống cung cấp báo cáo về số chuyến, doanh thu, tỷ lệ hoàn thành, tỷ lệ hủy 
-        và hiệu quả hoạt động của Tài xế cho Nhân viên vận hành (FR-38, BR-11).
+        Ban lãnh đạo xem báo cáo hoạt động của hệ thống.
+
+        Báo cáo có thể cung cấp các thông tin như:
+        - Số chuyến
+        - Doanh thu
+        - Tỷ lệ hoàn thành
+        - Tỷ lệ hủy
+        - Hiệu quả hoạt động của Tài xế
+
+        Chức năng thuộc UC09 - Quản lý báo cáo hoạt động.
+
+        Liên quan đến FR-38 và BR-11.
+
       security:
         - bearerAuth: []
+
       parameters:
+
         - name: startDate
           in: query
-          required: true
+          required: false
+          description: Ngày bắt đầu của khoảng thời gian báo cáo
           schema:
             type: string
             format: date
+
         - name: endDate
           in: query
-          required: true
+          required: false
+          description: Ngày kết thúc của khoảng thời gian báo cáo
           schema:
             type: string
             format: date
+
       responses:
+
         '200':
-          description: Dữ liệu báo cáo hoạt động vận hành
+          description: Dữ liệu báo cáo hoạt động
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReportDataResponse'
+
         '401':
           $ref: '#/components/responses/Unauthorized'
+
         '403':
-          description: Không có quyền truy cập (Yêu cầu role OPERATOR)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/Forbidden'
+
 
   /manager/reports/business:
     get:
       tags:
         - Manager Reports
-      summary: Xem báo cáo quản lý (UC39)
+
+      summary: Xem báo cáo hoạt động kinh doanh (UC09)
+
       description: |
-        Hệ thống cho phép Ban lãnh đạo xem các báo cáo phục vụ theo dõi và đánh giá hoạt động kinh doanh (FR-39, BR-12).
-        Nội dung hiển thị tương tự dữ liệu hoạt động nhưng phục vụ mục đích quản trị cấp cao.
+        Ban lãnh đạo xem các báo cáo cần thiết để theo dõi
+        và đánh giá hoạt động kinh doanh.
+
+        Chức năng thuộc UC09 - Quản lý báo cáo hoạt động.
+
+        Liên quan đến FR-39 và BR-12.
+
       security:
         - bearerAuth: []
+
       parameters:
+
         - name: startDate
           in: query
-          required: true
+          required: false
+          description: Ngày bắt đầu của khoảng thời gian báo cáo
           schema:
             type: string
             format: date
+
         - name: endDate
           in: query
-          required: true
+          required: false
+          description: Ngày kết thúc của khoảng thời gian báo cáo
           schema:
             type: string
             format: date
+
       responses:
+
         '200':
-          description: Dữ liệu báo cáo kinh doanh cho Ban lãnh đạo
+          description: Dữ liệu báo cáo hoạt động kinh doanh
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ReportDataResponse'
+
         '401':
           $ref: '#/components/responses/Unauthorized'
+
         '403':
-          description: Không có quyền truy cập (Yêu cầu role MANAGER)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          $ref: '#/components/responses/Forbidden'
+
 
 components:
+
+  # =========================================================
+  # SECURITY
+  # =========================================================
+
   securitySchemes:
+
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
 
+
+  # =========================================================
+  # COMMON RESPONSES
+  # =========================================================
+
   responses:
+
     Unauthorized:
-      description: Lỗi xác thực (Chưa đăng nhập hoặc Token hết hạn) (EC-17)
+      description: |
+        Người dùng chưa đăng nhập hoặc token đã hết hạn.
+
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
 
+    Forbidden:
+      description: |
+        Người dùng đã đăng nhập nhưng không có quyền
+        truy cập báo cáo.
+
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+
+  # =========================================================
+  # SCHEMAS
+  # =========================================================
+
   schemas:
+
+    # -------------------------------------------------------
+    # REPORT
+    # -------------------------------------------------------
+
     ReportDataResponse:
       type: object
-      description: Dữ liệu tổng hợp đúng theo yêu cầu "số chuyến, doanh thu, tỷ lệ hoàn thành, tỷ lệ hủy và hiệu quả hoạt động của Tài xế" (FR-38).
+
+      description: |
+        Dữ liệu tổng hợp phục vụ báo cáo hoạt động.
+
       properties:
+
         totalTrips:
           type: integer
-          description: Tổng số chuyến xe
+          description: Tổng số chuyến
+
         totalRevenue:
           type: number
           format: double
-          description: Doanh thu
+          description: Tổng doanh thu
+
         completionRate:
           type: number
           format: float
-          description: Tỷ lệ hoàn thành (%)
+          description: Tỷ lệ hoàn thành
+
         cancellationRate:
           type: number
           format: float
-          description: Tỷ lệ hủy (%)
+          description: Tỷ lệ hủy
+
         driverPerformances:
           type: array
-          description: Hiệu quả hoạt động của Tài xế
+          description: Thông tin hiệu quả hoạt động của Tài xế
           items:
             $ref: '#/components/schemas/DriverPerformance'
 
+
+    # -------------------------------------------------------
+    # DRIVER PERFORMANCE
+    # -------------------------------------------------------
+
     DriverPerformance:
       type: object
+
       properties:
+
         driverId:
           type: integer
+          format: int64
+          description: Mã tài xế
+
         fullName:
           type: string
+          description: Họ tên tài xế
+
         completedTrips:
           type: integer
           description: Số chuyến đã hoàn thành
+
         cancelledTrips:
           type: integer
           description: Số chuyến bị hủy
-        averageRating:
-          type: number
-          format: float
-          description: Điểm đánh giá trung bình từ RATING (BR-11)
+
+
+    # -------------------------------------------------------
+    # ERROR
+    # -------------------------------------------------------
 
     ErrorResponse:
       type: object
+
+      required:
+        - code
+        - message
+
       properties:
+
         code:
           type: string
+          example: ERR_FORBIDDEN
+
         message:
           type: string
+          example: Người dùng không có quyền truy cập chức năng này.
+```
