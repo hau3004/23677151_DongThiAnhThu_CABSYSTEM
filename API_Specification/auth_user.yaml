@@ -1,9 +1,17 @@
+```yaml
 openapi: 3.0.3
+
 info:
   title: CAB System API - Authentication & User Management
   description: |
-    API Specification cho phân hệ Quản lý Tài khoản & Hồ sơ của hệ thống đặt xe CAB.
-    Bao gồm các chức năng Đăng ký, Đăng nhập (FR-01, FR-02) và Quản lý thông tin cá nhân, cập nhật trạng thái/phương tiện tài xế (FR-03, FR-04).
+    API Specification cho phân hệ Quản lý Tài khoản và Hồ sơ
+    của hệ thống đặt xe CAB.
+
+    Bao gồm:
+    - Quản lý tài khoản người dùng (UC01)
+    - Quản lý hồ sơ tài xế (UC02)
+
+    Liên quan đến FR-01, FR-02, FR-03 và FR-04.
   version: 1.0.0
   contact:
     name: API Support
@@ -14,241 +22,333 @@ servers:
     description: Môi trường phát triển cục bộ
 
 tags:
-  - name: Auth
-    description: Các API liên quan đến xác thực (Đăng ký, Đăng nhập)
-  - name: User Profile
-    description: Các API quản lý hồ sơ người dùng chung (Khách hàng, Tài xế, Nhân viên)
-  - name: Driver Actions
-    description: Các API dành riêng cho Tài xế (Cập nhật xe, Trạng thái sẵn sàng)
+  - name: Authentication
+    description: Đăng ký và đăng nhập tài khoản (UC01)
+
+  - name: User Account
+    description: Quản lý thông tin tài khoản người dùng (UC01)
+
+  - name: Driver Profile
+    description: Quản lý hồ sơ tài xế, phương tiện và trạng thái sẵn sàng (UC02)
+
 
 paths:
+
+  # =========================================================
+  # UC01 - QUẢN LÝ TÀI KHOẢN
+  # =========================================================
+
   /auth/login:
     post:
       tags:
-        - Auth
-      summary: Đăng nhập hệ thống (UC02)
-      description: API cho phép Khách hàng, Tài xế, Nhân viên vận hành và Ban lãnh đạo đăng nhập.
+        - Authentication
+      summary: Đăng nhập hệ thống (UC01)
+      description: |
+        Người dùng đăng nhập vào hệ thống bằng thông tin
+        tài khoản hợp lệ.
+
+        Chức năng thuộc UC01 - Quản lý tài khoản.
+        Liên quan đến FR-02 và BR-01, BR-13.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/LoginRequest'
+
       responses:
         '200':
-          description: Đăng nhập thành công, trả về JWT token
+          description: Đăng nhập thành công
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
+
         '401':
-          description: Sai email hoặc mật khẩu
+          description: Thông tin đăng nhập không hợp lệ
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
 
   /auth/register/customer:
     post:
       tags:
-        - Auth
+        - Authentication
       summary: Đăng ký tài khoản Khách hàng (UC01)
+      description: |
+        Khách hàng đăng ký tài khoản để sử dụng hệ thống.
+
+        Chức năng thuộc UC01 - Quản lý tài khoản.
+        Liên quan đến FR-01 và BR-01.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/RegisterRequest'
+
       responses:
         '201':
-          description: Đăng ký thành công
+          description: Đăng ký tài khoản thành công
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserResponse'
+
         '409':
-          description: Email hoặc số điện thoại đã tồn tại
+          description: Thông tin tài khoản đã tồn tại
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
 
   /auth/register/driver:
     post:
       tags:
-        - Auth
+        - Authentication
       summary: Đăng ký tài khoản Tài xế (UC01)
+      description: |
+        Tài xế có thể tự đăng ký tài khoản.
+
+        Chức năng thuộc UC01 - Quản lý tài khoản.
+        Liên quan đến FR-01 và BR-01.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/RegisterRequest'
+
       responses:
         '201':
-          description: Đăng ký thành công
+          description: Đăng ký tài khoản thành công
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserResponse'
+
         '409':
-          description: Email hoặc số điện thoại đã tồn tại
+          description: Thông tin tài khoản đã tồn tại
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+
   /users/me:
     get:
       tags:
-        - User Profile
-      summary: Lấy thông tin cá nhân (UC03)
+        - User Account
+      summary: Xem thông tin tài khoản cá nhân (UC01)
+      description: |
+        Người dùng xem thông tin tài khoản của chính mình.
+
+        Chức năng thuộc UC01 - Quản lý tài khoản.
+        Liên quan đến FR-03.
       security:
         - bearerAuth: []
+
       responses:
         '200':
-          description: Thông tin chi tiết của người dùng đang đăng nhập
+          description: Thông tin tài khoản
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserResponse'
+
         '401':
           $ref: '#/components/responses/Unauthorized'
-          
+
+
     put:
       tags:
-        - User Profile
-      summary: Cập nhật thông tin cá nhân (UC03)
+        - User Account
+      summary: Cập nhật thông tin cá nhân (UC01)
+      description: |
+        Người dùng cập nhật thông tin cá nhân của mình.
+
+        Chức năng thuộc UC01 - Quản lý tài khoản.
+        Liên quan đến FR-03.
       security:
         - bearerAuth: []
+
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateProfileRequest'
+
       responses:
         '200':
-          description: Cập nhật thành công
+          description: Cập nhật thông tin thành công
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserResponse'
+
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /users/me/password:
-    put:
-      tags:
-        - User Profile
-      summary: Đổi mật khẩu (UC03)
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ChangePasswordRequest'
-      responses:
-        '204':
-          description: Đổi mật khẩu thành công
-        '400':
-          description: Mật khẩu cũ không đúng
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+
+  # =========================================================
+  # UC02 - QUẢN LÝ HỒ SƠ TÀI XẾ
+  # =========================================================
 
   /drivers/me/status:
     patch:
       tags:
-        - Driver Actions
-      summary: Cập nhật trạng thái sẵn sàng nhận chuyến (UC05)
-      description: API dành riêng cho Tài xế để chuyển trạng thái AVAILABLE / UNAVAILABLE (BRL-02)
+        - Driver Profile
+      summary: Cập nhật trạng thái sẵn sàng nhận chuyến (UC02)
+      description: |
+        Tài xế cập nhật trạng thái sẵn sàng nhận chuyến.
+
+        Chức năng thuộc UC02 - Quản lý hồ sơ tài xế.
+        Liên quan đến FR-04 và BRL-02.
       security:
         - bearerAuth: []
+
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateReadyStatusRequest'
+
       responses:
         '200':
-          description: Cập nhật trạng thái thành công
+          description: Cập nhật trạng thái sẵn sàng thành công
+
         '401':
           $ref: '#/components/responses/Unauthorized'
+
         '403':
           $ref: '#/components/responses/Forbidden'
 
-  /drivers/me/vehicle:
+
+  /drivers/me/vehicles:
     get:
       tags:
-        - Driver Actions
-      summary: Xem thông tin phương tiện (UC04)
+        - Driver Profile
+      summary: Xem thông tin phương tiện (UC02)
+      description: |
+        Tài xế xem thông tin các phương tiện thuộc hồ sơ của mình.
+
+        Chức năng thuộc UC02 - Quản lý hồ sơ tài xế.
+        Liên quan đến FR-04.
       security:
         - bearerAuth: []
+
       responses:
         '200':
-          description: Thông tin phương tiện của tài xế
+          description: Danh sách phương tiện
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VehicleResponse'
+                $ref: '#/components/schemas/VehicleListResponse'
+
         '401':
           $ref: '#/components/responses/Unauthorized'
+
         '403':
           $ref: '#/components/responses/Forbidden'
-          
+
+
+  /drivers/me/vehicles/{vehicleId}:
     put:
       tags:
-        - Driver Actions
-      summary: Cập nhật hồ sơ phương tiện (UC04)
+        - Driver Profile
+      summary: Cập nhật thông tin phương tiện (UC02)
+      description: |
+        Tài xế cập nhật thông tin phương tiện thuộc hồ sơ của mình.
+
+        Chức năng thuộc UC02 - Quản lý hồ sơ tài xế.
+        Liên quan đến FR-04.
       security:
         - bearerAuth: []
+
+      parameters:
+        - name: vehicleId
+          in: path
+          required: true
+          description: Mã phương tiện
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/VehicleRequest'
+
       responses:
         '200':
-          description: Cập nhật thành công
+          description: Cập nhật thông tin phương tiện thành công
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/VehicleResponse'
+
+        '400':
+          description: Thông tin phương tiện không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
         '401':
           $ref: '#/components/responses/Unauthorized'
+
         '403':
           $ref: '#/components/responses/Forbidden'
 
+        '404':
+          description: Không tìm thấy phương tiện
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
 components:
+
   securitySchemes:
+
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
 
+
   responses:
+
     Unauthorized:
-      description: Không có quyền truy cập (Chưa đăng nhập hoặc token hết hạn)
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorResponse'
-    Forbidden:
-      description: Hành động bị từ chối (Không đúng vai trò, vd Khách hàng gọi API của Tài xế)
+      description: |
+        Người dùng chưa đăng nhập hoặc token đã hết hạn.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
 
+
+    Forbidden:
+      description: |
+        Người dùng đã đăng nhập nhưng không có quyền
+        thực hiện chức năng này.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+
   schemas:
+
     LoginRequest:
       type: object
       required:
@@ -258,9 +358,13 @@ components:
         email:
           type: string
           format: email
+          description: Email đăng nhập
+
         password:
           type: string
           format: password
+          description: Mật khẩu
+
 
     AuthResponse:
       type: object
@@ -268,12 +372,15 @@ components:
         accessToken:
           type: string
           description: JWT Token
+
         expiresIn:
           type: integer
-          description: Thời gian hết hạn tính bằng giây
+          description: Thời gian hết hạn của token tính bằng giây
+
         role:
           type: string
-          enum: [CUSTOMER, DRIVER, OPERATOR, MANAGER]
+          description: Vai trò của người dùng
+
 
     RegisterRequest:
       type: object
@@ -285,57 +392,61 @@ components:
       properties:
         fullName:
           type: string
+          description: Họ và tên
+
         phone:
           type: string
+          description: Số điện thoại
+
         email:
           type: string
           format: email
+          description: Email
+
         password:
           type: string
           format: password
+          description: Mật khẩu
+
 
     UserResponse:
       type: object
       properties:
         id:
           type: integer
+          format: int64
+
         fullName:
           type: string
+
         phone:
           type: string
+
         email:
           type: string
+
         role:
           type: string
-          enum: [CUSTOMER, DRIVER, OPERATOR, MANAGER]
+          description: Vai trò người dùng
+
         status:
           type: string
-          enum: [ACTIVE, INACTIVE, BLOCKED]
-        readyStatus:
-          type: string
-          enum: [AVAILABLE, UNAVAILABLE]
-          description: Chỉ trả về nếu User là Tài xế
+          description: Trạng thái tài khoản
+
 
     UpdateProfileRequest:
       type: object
       properties:
         fullName:
           type: string
+
         phone:
           type: string
 
-    ChangePasswordRequest:
-      type: object
-      required:
-        - oldPassword
-        - newPassword
-      properties:
-        oldPassword:
+        email:
           type: string
-          format: password
-        newPassword:
-          type: string
-          format: password
+          format: email
+
 
     UpdateReadyStatusRequest:
       type: object
@@ -344,7 +455,8 @@ components:
       properties:
         readyStatus:
           type: string
-          enum: [AVAILABLE, UNAVAILABLE]
+          description: Trạng thái sẵn sàng nhận chuyến
+
 
     VehicleRequest:
       type: object
@@ -354,31 +466,61 @@ components:
       properties:
         vehicleType:
           type: string
-          enum: [CAR_4_SEATS, CAR_7_SEATS, MOTORBIKE]
+          description: Loại phương tiện
+
         licensePlate:
           type: string
+          description: Biển số xe
+
 
     VehicleResponse:
       type: object
       properties:
         vehicleId:
           type: integer
+          format: int64
+
         driverId:
           type: integer
+          format: int64
+
         vehicleType:
           type: string
+          description: Loại phương tiện
+
         licensePlate:
           type: string
+          description: Biển số xe
+
         status:
           type: string
-          enum: [ACTIVE, MAINTENANCE, INACTIVE]
+          description: Trạng thái phương tiện
+
+
+    VehicleListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleResponse'
+
+        total:
+          type: integer
+          description: Tổng số phương tiện
+
 
     ErrorResponse:
       type: object
+      required:
+        - code
+        - message
       properties:
         code:
           type: string
-          example: "ERR_INVALID_INPUT"
+          example: ERR_INVALID_INPUT
+
         message:
           type: string
-          example: "Thông tin đầu vào không hợp lệ."
+          example: Thông tin đầu vào không hợp lệ.
+```
