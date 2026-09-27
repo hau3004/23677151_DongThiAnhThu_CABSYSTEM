@@ -1,222 +1,275 @@
 openapi: 3.0.3
+
 info:
   title: CAB System API - Fare & Payment
   description: |
-    API Specification cho phân hệ Tính cước và Thanh toán của hệ thống CAB.
-    Bao gồm API xem chi tiết cước phí thực tế (FR-20) và Webhook để nhận kết quả giao dịch thanh toán điện tử từ Payment Gateway (FR-24, FR-25, BRL-22, EC-03).
+    API Specification cho phân hệ Tính cước và Thanh toán
+    của hệ thống đặt xe CAB.
+
+    Bao gồm:
+    - Xem cước thực tế sau khi chuyến đi hoàn thành (FR-20)
+    - Xử lý kết quả thanh toán điện tử từ Payment Gateway (FR-24)
+    - Xử lý thanh toán điện tử thất bại và ghi nhận kết quả (FR-25, FR-26)
+
+    Thuộc UC04 - Thanh toán.
   version: 1.0.0
+
   contact:
     name: API Support
     email: support@cabsystem.vn
+
 
 servers:
   - url: https://api.cabsystem.local/v1
     description: Môi trường phát triển cục bộ
 
+
 tags:
   - name: Fare
-    description: Các API liên quan đến tính toán và tra cứu cước phí chuyến đi
+    description: Các API liên quan đến cước thực tế của chuyến đi
+
   - name: Payment
-    description: Quản lý giao dịch thanh toán và tích hợp cổng thanh toán bên thứ 3
+    description: Quản lý giao dịch thanh toán và tích hợp Payment Gateway
+
 
 paths:
+
+  # =========================================================
+  # UC04 - THANH TOÁN
+  # =========================================================
+
   /trips/{tripId}/fare:
     get:
       tags:
         - Fare
-      summary: Xem chi tiết cước phí thực tế (UC21)
+
+      summary: Xem cước thực tế của chuyến đi (UC04)
+
       description: |
-        Truy xuất thông tin chi tiết cước phí của chuyến đi sau khi đã hoàn thành (BRL-19).
-        Bao gồm các thành phần: cước mở cửa, cước theo km, cước thời gian và phụ phí (nếu có).
+        Truy xuất cước thực tế đã được hệ thống ghi nhận
+        sau khi chuyến đi hoàn thành.
+
+        API này không quy định công thức hoặc các thành phần
+        tính cước cụ thể.
+
+        Liên quan đến FR-20 và BRL-17.
+
       security:
         - bearerAuth: []
+
       parameters:
         - name: tripId
           in: path
           required: true
+          description: Mã chuyến đi
           schema:
             type: integer
+            format: int64
+            minimum: 1
+
       responses:
+
         '200':
-          description: Chi tiết cước phí của chuyến đi
+          description: Cước thực tế của chuyến đi
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FareDetailResponse'
+                $ref: '#/components/schemas/FareResponse'
+
         '400':
-          description: Chuyến xe chưa hoàn thành, chưa có cước thực tế (EC-12)
+          description: Chuyến đi chưa hoàn thành hoặc chưa có cước thực tế
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
         '401':
           $ref: '#/components/responses/Unauthorized'
+
         '404':
           description: Không tìm thấy chuyến đi
-
-  /trips/{tripId}/payment:
-    get:
-      tags:
-        - Payment
-      summary: Tra cứu trạng thái thanh toán của chuyến đi (UC27)
-      description: API để Khách hàng hoặc Nhân viên vận hành kiểm tra trạng thái thanh toán (BRL-23).
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: tripId
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Thông tin thanh toán hiện tại
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaymentResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          description: Không tìm thấy thông tin giao dịch
+                $ref: '#/components/schemas/ErrorResponse'
+
 
   /payments/webhook:
     post:
       tags:
         - Payment
-      summary: Webhook nhận kết quả từ Payment Gateway (UC25, UC26)
+
+      summary: Nhận kết quả thanh toán điện tử từ Payment Gateway (UC04)
+
       description: |
-        Endpoint dành cho các đối tác Cổng thanh toán (VNPay, Momo, ZaloPay...) gọi về để báo kết quả thanh toán điện tử (FR-24).
-        Nếu `paymentStatus` = SUCCESS -> Ghi nhận PAID, tự động trigger tạo yêu cầu tìm Tài xế (BRL-09).
-        Nếu `paymentStatus` = FAILED -> Ghi nhận FAILED, gửi thông báo thanh toán thất bại cho Khách (EC-03, BR-18).
-      security:
-        - gatewaySignature: []
+        Payment Gateway gửi kết quả giao dịch thanh toán điện tử
+        về hệ thống CAB.
+
+        Nếu thanh toán thành công, hệ thống ghi nhận kết quả
+        thanh toán tương ứng.
+
+        Nếu thanh toán thất bại, hệ thống ghi nhận kết quả thất bại
+        và thông báo cho khách hàng để thực hiện lại hoặc xử lý lại
+        theo chính sách của công ty.
+
+        Liên quan đến FR-24, FR-25, FR-26,
+        BRL-20, BRL-21 và BRL-22.
+
       requestBody:
         required: true
+
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/PaymentWebhookPayload'
+
       responses:
+
         '200':
-          description: Hệ thống CAB đã ghi nhận kết quả thành công (ACK)
+          description: Hệ thống CAB đã ghi nhận kết quả thanh toán
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "OK"
+                $ref: '#/components/schemas/PaymentWebhookResponse'
+
         '400':
-          description: Dữ liệu payload không hợp lệ hoặc sai chữ ký (Signature)
+          description: Dữ liệu kết quả thanh toán không hợp lệ
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+
 components:
+
+  # =========================================================
+  # SECURITY
+  # =========================================================
+
   securitySchemes:
+
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-    gatewaySignature:
-      type: apiKey
-      in: header
-      name: X-Signature
-      description: Chữ ký điện tử HMAC/RSA để xác thực tính toàn vẹn của webhook từ Payment Gateway.
+
+
+  # =========================================================
+  # COMMON RESPONSES
+  # =========================================================
 
   responses:
+
     Unauthorized:
-      description: Không có quyền truy cập
+      description: |
+        Người dùng chưa đăng nhập hoặc token đã hết hạn.
+
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
 
+
+  # =========================================================
+  # SCHEMAS
+  # =========================================================
+
   schemas:
-    FareDetailResponse:
+
+    # -------------------------------------------------------
+    # FARE
+    # -------------------------------------------------------
+
+    FareResponse:
       type: object
+
       properties:
+
         tripId:
           type: integer
-        baseFare:
+          format: int64
+          description: Mã chuyến đi
+
+        actualFare:
           type: number
           format: double
-          description: Cước mở cửa / giá cơ bản
-        distanceFare:
-          type: number
-          format: double
-          description: Cước tính theo khoảng cách di chuyển thực tế
-        timeFare:
-          type: number
-          format: double
-          description: Cước tính theo thời gian di chuyển (nếu có kẹt xe)
-        surgeAmount:
-          type: number
-          format: double
-          description: Phụ phí giờ cao điểm / thời tiết
-        totalActualFare:
-          type: number
-          format: double
-          description: Tổng cước thực tế (ActualFare trong ERD)
+          description: Cước thực tế của chuyến đi
+
         currency:
           type: string
-          example: "VND"
+          description: Đơn vị tiền tệ
+          example: VND
 
-    PaymentResponse:
-      type: object
-      properties:
-        paymentId:
-          type: integer
-        tripId:
-          type: integer
-        paymentMethod:
-          type: string
-          enum: [CASH, E_WALLET, CREDIT_CARD]
-        amount:
-          type: number
-          format: double
-        paymentStatus:
-          type: string
-          enum: [PENDING, PAID, FAILED, UNPAID]
-        transactionId:
-          type: string
-          description: Mã giao dịch trả về từ Payment Gateway
-        paymentTime:
-          type: string
-          format: date-time
+
+    # -------------------------------------------------------
+    # PAYMENT
+    # -------------------------------------------------------
 
     PaymentWebhookPayload:
       type: object
+
       required:
         - tripId
         - transactionId
         - amount
         - paymentStatus
+
       properties:
+
         tripId:
           type: integer
-          description: ID của chuyến đi trong hệ thống CAB
+          format: int64
+          description: Mã chuyến đi trong hệ thống CAB
+
         transactionId:
           type: string
-          description: Mã giao dịch đối soát của cổng thanh toán
+          description: Mã giao dịch do Payment Gateway cung cấp
+
         amount:
           type: number
           format: double
+          description: Số tiền giao dịch
+
         paymentStatus:
           type: string
-          enum: [SUCCESS, FAILED]
-          description: Trạng thái thanh toán từ đối tác
+          enum:
+            - SUCCESS
+            - FAILED
+          description: Kết quả giao dịch từ Payment Gateway
+
         message:
           type: string
-          description: Thông báo lỗi từ gateway (nếu FAILED)
+          description: Thông tin kết quả hoặc lỗi từ Payment Gateway
+
+
+    PaymentWebhookResponse:
+      type: object
+
+      properties:
+
+        status:
+          type: string
+          example: OK
+
+        paymentId:
+          type: integer
+          format: int64
+          description: Mã thanh toán được hệ thống CAB ghi nhận
+
 
     ErrorResponse:
       type: object
+
+      required:
+        - code
+        - message
+
       properties:
+
         code:
           type: string
+          example: ERR_INVALID_INPUT
+
         message:
           type: string
+          example: Thông tin đầu vào không hợp lệ.
