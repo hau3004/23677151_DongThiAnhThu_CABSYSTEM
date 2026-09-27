@@ -85,14 +85,14 @@ quadrantChart
 | BR-09 | Đánh giá tài xế | Hệ thống phải cho phép Khách hàng đánh giá Tài xế sau khi chuyến đi hoàn thành. |
 | BR-10 | Quản lý vận hành |Hệ thống phải cung cấp cho Nhân viên vận hành các chức năng quản lý khách hàng, tài xế, phương tiện và chuyến đi. |
 | BR-11 | Báo cáo hoạt động |Hệ thống phải cung cấp báo cáo về số chuyến, doanh thu, tỷ lệ hoàn thành, tỷ lệ hủy và hiệu quả hoạt động của Tài xế để Ban lãnh đạo theo dõi hoạt động kinh doanh.|
-| BR-12 | Báo cáo cho ban lãnh đạo | Hệ thống phải cho phép Ban lãnh đạo truy cập các báo cáo cần thiết để theo dõi và đánh giá hoạt động kinh doanh. |
+| BR-12 |Tra cứu lịch sử giao dịch | Hệ thống phải cho phép Ban lãnh đạo truy cập các báo cáo cần thiết để theo dõi và đánh giá hoạt động kinh doanh.Hệ thống phải cho phép Nhân viên vận hành tra cứu lịch sử giao dịch. |
 | BR-13 |Bảo vệ dữ liệu và kiểm soát truy cập |Hệ thống phải xác thực người dùng trước các chức năng yêu cầu tài khoản, kiểm soát quyền truy cập của Nhân viên vận hành, bảo vệ thông tin cá nhân, dữ liệu phương tiện, vị trí và giao dịch, đồng thời ghi nhận các hành động quan trọng để phục vụ kiểm tra và truy vết. |
 | BR-14 | Khả năng mở rộng | Hệ thống phải có khả năng mở rộng để đáp ứng số lượng lớn Khách hàng và Tài xế trong tương lai. |
 | BR-15 | Quản lý hồ sơ tài xế |Hệ thống phải cho phép Tài xế đăng ký hoặc Nhân viên vận hành tạo tài khoản cho Tài xế; Tài xế có thể cập nhật thông tin cá nhân, thông tin phương tiện và trạng thái sẵn sàng nhận chuyến.|
 | BR-16 | Theo dõi và xử lý sự cố | Hệ thống phải cho phép Nhân viên vận hành theo dõi các chuyến đang diễn ra, trạng thái Tài xế và xử lý các trường hợp phát sinh trong quá trình vận hành.|
 | BR-17 | Thông báo khi không tìm được tài xế |Hệ thống phải thông báo cho Khách hàng khi không tìm được Tài xế phù hợp cho yêu cầu đặt xe. |
 | BR-18 | Xử lý thanh toán thất bại | Hệ thống phải thông báo cho Khách hàng khi giao dịch thanh toán điện tử thất bại và cho phép thử lại hoặc xử lý lại giao dịch theo chính sách nghiệp vụ. |
-| BR-19 | Tra cứu lịch sử giao dịch | Hệ thống phải cho phép Nhân viên vận hành tra cứu lịch sử giao dịch. |
+
 ##7 . BUSINESS PROCESS MODELING
 
 
